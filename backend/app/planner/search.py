@@ -42,6 +42,7 @@ class SearchResult:
     rejections: dict[str, str]
     call_first: Optional[Resource] = None
     feasible: bool = True
+    covered: dict[ServiceType, Resource] = field(default_factory=dict)
 
 
 def local_time(value: datetime) -> datetime:
@@ -121,9 +122,18 @@ def search(g: nx.DiGraph, eligible: list[Resource], uc: UserConstraints, now: da
     best_cost, best_travel, best_score = 0.0, 0, 0.0
     best_unmet = [n.type for n in needs]
     best_call = None
+    best_covered: dict[ServiceType, Resource] = {}
+    feasible_ids: set[str] = set()
 
     def consider(visits, cost, travel, missing, call):
-        nonlocal best_key, best_visits, best_cost, best_travel, best_score, best_unmet, best_call
+        nonlocal best_key, best_visits, best_cost, best_travel, best_score, best_unmet, best_call, best_covered
+        covered: dict[ServiceType, Resource] = {}
+        if ServiceType.food in missing:
+            feeder = next((v.resource for v in visits if v.resource.service == ServiceType.emergency_housing
+                           and "meals_included" in v.resource.tags and v.day_label == "tonight"), None)
+            if feeder is not None:
+                covered[ServiceType.food] = feeder
+                missing = [m for m in missing if m != ServiceType.food]
         missing_rank = tuple(sum(1 for n in needs if n.type in missing and n.priority == p)
                              for p in ("high", "medium", "low"))
         missing_rank += tuple(int(n.type in missing) for n in sorted(
@@ -138,6 +148,7 @@ def search(g: nx.DiGraph, eligible: list[Resource], uc: UserConstraints, now: da
         if best_key is None or key < best_key:
             best_key, best_visits = key, visits
             best_cost, best_travel, best_score, best_unmet, best_call = cost, travel, score, missing, call
+            best_covered = covered
 
     def schedule(pairs, index, loc, t, cost, travel, visits, missing, call):
         if index == len(pairs):
@@ -171,6 +182,7 @@ def search(g: nx.DiGraph, eligible: list[Resource], uc: UserConstraints, now: da
                 vw.append("Step-free access is seeded for this demo; confirm vehicle and stop accessibility")
             visit = Visit(r, arrival, arrival + timedelta(minutes=DWELL_MIN[r.service]), leg, loc,
                           _slack(r, arrival), day, vw, penalties.get(r.id, 0.0))
+            feasible_ids.add(r.id)
             schedule(pairs, index + 1, r.id, visit.departure, next_cost,
                      travel + leg.duration_min, visits + [visit], missing, call)
 
@@ -178,7 +190,7 @@ def search(g: nx.DiGraph, eligible: list[Resource], uc: UserConstraints, now: da
         pairs = list(zip(needs, combo))
         housing = next((r for r in combo if r and r.service == ServiceType.emergency_housing and r.phone), None)
         schedule(pairs, 0, ORIGIN, now + timedelta(minutes=CALL_MIN if housing else 0), 0.0, 0, [], [], housing)
-    for visit in best_visits:
-        rejections.pop(visit.resource.id, None)
+    for rid in feasible_ids:
+        rejections.pop(rid, None)
     return SearchResult(best_visits, best_score, best_cost, best_travel, best_unmet, rejections,
-                        best_call, bool(best_visits) and not best_unmet)
+                        best_call, bool(best_visits) and not best_unmet, best_covered)

@@ -44,7 +44,7 @@ def extract(text: str) -> UserConstraints:
     if FOOD.search(t) or HOUSING.search(t):
         needs.append(Need(type=ServiceType.food, priority="high", deadline="tonight"))
     if LONG_TERM.search(t) or any(n.type == ServiceType.emergency_housing for n in needs):
-        needs.append(Need(type=ServiceType.long_term_assistance, priority="low", deadline="tomorrow"))
+        needs.append(Need(type=ServiceType.long_term_assistance, priority="low", deadline="this_week"))
     if not needs:
         needs = [Need(type=ServiceType.emergency_housing, priority="high", deadline="tonight"),
                  Need(type=ServiceType.food, priority="medium", deadline="tonight")]

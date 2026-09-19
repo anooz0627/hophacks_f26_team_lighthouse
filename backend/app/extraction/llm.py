@@ -29,7 +29,7 @@ SYSTEM = """You extract structured needs and constraints from a short descriptio
 Rules:
 - Output only the fields in the schema. Do not invent facts. Unknown means null.
 - Needs: emergency_housing = needs a place to sleep soon. food = hungry / no food. long_term_assistance = wants stable housing, benefits, rent help, case management, ID replacement.
-- If someone lost their housing or has nowhere to sleep, add emergency_housing (priority high, deadline tonight) AND long_term_assistance (priority low, deadline tomorrow).
+- If someone lost their housing or has nowhere to sleep, add emergency_housing (priority high, deadline tonight) AND long_term_assistance (priority low, deadline this_week).
 - 'tonight' means they need it within hours. 'tomorrow' for next-day. 'this_week' otherwise.
 - has_car is false unless they clearly have a working car available.
 - family_size counts everyone travelling together (e.g. 'me and my two kids' = 3).
@@ -37,9 +37,9 @@ Rules:
 
 EXAMPLES = [
     ("I'm 19. I lost my housing today, don't have a car, have $10, and need somewhere to sleep tonight.",
-     '{"needs":[{"type":"emergency_housing","priority":"high","deadline":"tonight"},{"type":"long_term_assistance","priority":"low","deadline":"tomorrow"}],"age":19,"budget_usd":10,"has_car":false,"has_id":null,"family_size":1,"gender":null}'),
+     '{"needs":[{"type":"emergency_housing","priority":"high","deadline":"tonight"},{"type":"long_term_assistance","priority":"low","deadline":"this_week"}],"age":19,"budget_usd":10,"has_car":false,"has_id":null,"family_size":1,"gender":null}'),
     ("My friend needs somewhere to stay tonight, doesn't have a car, and hasn't eaten today.",
-     '{"needs":[{"type":"emergency_housing","priority":"high","deadline":"tonight"},{"type":"food","priority":"high","deadline":"tonight"},{"type":"long_term_assistance","priority":"low","deadline":"tomorrow"}],"age":null,"budget_usd":null,"has_car":false,"has_id":null,"family_size":1,"gender":null}'),
+     '{"needs":[{"type":"emergency_housing","priority":"high","deadline":"tonight"},{"type":"food","priority":"high","deadline":"tonight"},{"type":"long_term_assistance","priority":"low","deadline":"this_week"}],"age":null,"budget_usd":null,"has_car":false,"has_id":null,"family_size":1,"gender":null}'),
 ]
 
 

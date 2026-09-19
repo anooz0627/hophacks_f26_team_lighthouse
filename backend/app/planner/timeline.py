@@ -32,9 +32,14 @@ def build_timeline(result: SearchResult, now: datetime) -> list[PlanStep]:
         resource = result.call_first
         capacity = f"{resource.capacity} spots reported. " if resource.capacity is not None else ""
         phone_label = "Demo phone" if resource.simulated else "Phone"
+        if "referral_required" in resource.tags:
+            title = f"Call Coordinated Entry for a referral to {resource.name}"
+            detail = f"No walk-ins: a referral is required before you can be admitted. {phone_label}: {resource.phone}"
+        else:
+            title = f"Call {resource.name}"
+            detail = f"{capacity}Confirm a place, intake time and required documents. {phone_label}: {resource.phone}"
         steps.append(_step(
-            now, now, type="call", title=f"Call {resource.name}", resource_id=resource.id,
-            detail=f"{capacity}Confirm a place, intake time and required documents. {phone_label}: {resource.phone}",
+            now, now, type="call", title=title, resource_id=resource.id, detail=detail,
             duration_min=CALL_MIN, lat=resource.lat, lng=resource.lng,
         ))
 
@@ -68,6 +73,15 @@ def build_timeline(result: SearchResult, now: datetime) -> list[PlanStep]:
             resource_id=resource.id, detail=" · ".join(details), lat=resource.lat, lng=resource.lng,
             warnings=visit.warnings, bring=list(resource.eligibility.required_documents),
             cost_usd=resource.cost,
+        ))
+
+    for resource in result.covered.values():
+        visit = next((v for v in result.visits if v.resource.id == resource.id), None)
+        time = visit.arrival if visit else now
+        steps.append(_step(
+            now, time + timedelta(minutes=1), type="note", title=f"Dinner is served at {resource.name}",
+            detail="Guests receive an evening meal, so no separate food stop is needed tonight.",
+            resource_id=resource.id,
         ))
 
     if result.unmet:

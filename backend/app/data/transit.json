@@ -128,6 +128,40 @@
           "lng": -76.605
         }
       ]
+    },
+    {
+      "id": "citylink_navy",
+      "name": "CityLink Navy (approx.)",
+      "fare": 2.0,
+      "headway_min": 15,
+      "avg_speed_kmh": 20,
+      "stops": [
+        {
+          "name": "Sandtown / N Mount St",
+          "lat": 39.3018,
+          "lng": -76.644
+        },
+        {
+          "name": "Upton / Pennsylvania Ave",
+          "lat": 39.3005,
+          "lng": -76.633
+        },
+        {
+          "name": "Lexington Market",
+          "lat": 39.2917,
+          "lng": -76.6207
+        },
+        {
+          "name": "Charles Center",
+          "lat": 39.2905,
+          "lng": -76.615
+        },
+        {
+          "name": "City Hall / Old Town",
+          "lat": 39.295,
+          "lng": -76.606
+        }
+      ]
     }
   ]
 }

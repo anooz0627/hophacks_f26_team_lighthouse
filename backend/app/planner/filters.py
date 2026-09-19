@@ -55,6 +55,8 @@ def apply_filters(resources: list[Resource], uc: UserConstraints) -> FilterResul
             reason = f"costs ${r.cost:.0f}, over budget"
         elif not e.families_ok and c.family_size > 1:
             reason = "does not accept families"
+        elif "families_only" in r.tags and c.family_size <= 1:
+            reason = "families with children only"
         elif e.gender and c.gender and e.gender != c.gender:
             reason = f"{e.gender}-only"
 
