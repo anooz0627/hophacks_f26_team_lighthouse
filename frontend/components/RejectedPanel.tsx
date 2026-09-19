@@ -1,6 +1,5 @@
 import type { RejectedResource } from "@/lib/types";
 import Icon from "./Icon";
-
 export default function RejectedPanel({
   rejected,
 }: {

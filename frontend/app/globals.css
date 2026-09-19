@@ -1373,6 +1373,57 @@ input[type="radio"] {
   color: #554764;
   font-weight: 550;
 }
+.page-intro .eyebrow {
+  color: var(--purple);
+  margin-bottom: 9px;
+}
+.demo-clock {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+.demo-clock small {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.75rem;
+}
+.dataset-note {
+  display: flex;
+  gap: 10px;
+  color: #77727e;
+  padding: 0 7px;
+  font-size: 0.75rem;
+  line-height: 1.7;
+}
+.dataset-note svg {
+  margin-top: 3px;
+  color: #8b8494;
+}
+.dataset-note strong {
+  font-weight: 550;
+  display: block;
+  color: #5c5566;
+  margin-bottom: 3px;
+}
+.dataset-note a {
+  text-decoration: underline;
+}
+.map-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  background: none;
+  padding: 12px 0;
+  min-height: 44px;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+.map-section > p {
+  margin-bottom: 14px;
+}
 @media (min-width: 1450px) {
   .main-shell {
     padding-top: 48px;
@@ -1399,6 +1450,49 @@ input[type="radio"] {
   }
   .panel {
     padding: 22px;
+  }
+  .strategy-options {
+    flex-direction: column;
+  }
+  .strategy-card {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 7px 15px;
+  }
+  .strategy-tradeoff {
+    grid-column: 1/-1;
+  }
+  .strategy-name {
+    width: 100%;
+  }
+  .strategy-numbers {
+    font-size: 1rem;
+  }
+  .radio-dot {
+    display: none;
+  }
+  .timeline-row {
+    grid-template-columns: 52px 26px minmax(0, 1fr);
+    gap: 8px;
+  }
+  .timeline-row:before {
+    left: 73px;
+  }
+  .timeline-node {
+    width: 26px;
+    height: 26px;
+  }
+  .time-label {
+    font-size: 0.6875rem;
+  }
+  .visit-row .step-card {
+    padding: 15px;
+  }
+  .plan-overview > div {
+    padding: 0 10px;
+  }
+  .plan-overview small {
+    display: block;
   }
 }
 @media (max-width: 780px) {
@@ -1448,6 +1542,30 @@ input[type="radio"] {
   }
   .plan-column {
     order: 1;
+  }
+  .demo-clock {
+    display: none;
+  }
+  .dataset-note {
+    display: none;
+  }
+  .strategy-options {
+    flex-direction: row;
+  }
+  .strategy-card {
+    display: flex;
+  }
+  .time-label {
+    font-size: 0.75rem;
+  }
+  .plan-overview small {
+    display: inline;
+  }
+  .empty-plan {
+    min-height: 415px;
+  }
+  .empty-path {
+    margin-top: 30px;
   }
 }
 @media (max-width: 480px) {
@@ -1616,6 +1734,87 @@ input[type="radio"] {
     margin-left: 0;
     width: 100%;
   }
+  .header-inner {
+    min-height: 72px;
+    padding: 14px 18px;
+    gap: 10px;
+  }
+  .brand {
+    font-size: 1.3rem;
+  }
+  .brand-mark {
+    width: 34px;
+    height: 34px;
+    margin-right: 8px;
+  }
+  .header-actions {
+    gap: 6px;
+  }
+  .header-actions .button {
+    font-size: 0.75rem;
+    padding: 8px;
+  }
+  .demo-tag {
+    display: none;
+  }
+  .empty-plan {
+    padding: 24px 20px 0;
+  }
+  .empty-plan h2 {
+    font-size: 1.75rem;
+  }
+  .empty-bottom {
+    margin-left: -20px;
+    margin-right: -20px;
+  }
+  .empty-checks {
+    font-size: 0.6875rem;
+  }
+  .empty-path i {
+    width: 25px;
+  }
+  .review-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .review-actions p {
+    text-align: center;
+  }
+  .strategy-tradeoff {
+    grid-column: 1/-1;
+  }
+  .plan-overview {
+    padding: 13px 3px;
+  }
+  .plan-overview > div {
+    padding: 0 9px;
+  }
+  .plan-overview strong {
+    font-size: 1.1rem;
+  }
+  .plan-overview small {
+    display: block;
+  }
+  .step-address {
+    font-size: 0.75rem;
+  }
+  .complete-button {
+    font-size: 0.75rem;
+    min-height: 44px;
+  }
+  .checked-options summary > span {
+    display: none;
+  }
+  .checked-options summary > svg:last-child {
+    margin-left: auto;
+  }
+  .replacement-pair {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .replacement-pair > svg {
+    transform: rotate(90deg);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -1627,9 +1826,13 @@ input[type="radio"] {
   }
 }
 @media print {
+  .site-header,
   .journey,
   .context-column,
+  .strategy-options,
   .resource-actions,
+  .complete-button,
+  .map-section,
   .site-footer {
     display: none;
   }
@@ -1639,25 +1842,41 @@ input[type="radio"] {
   .planner-layout {
     display: block;
   }
+  .step-card {
+    break-inside: avoid;
+  }
 }
 .situation-panel .button-primary {
   margin-top: 12px;
 }
 .scenario,
-.button-small {
+.button-small,
+.complete-button {
   min-height: 44px;
 }
 .scenario,
 .button-small,
+.complete-button,
+.step-footer .text-button,
+.strategy-tradeoff,
+.comparison-note,
+.requirements,
+.step-facts,
+.step-address,
+.step-warnings p,
+.why-selected,
 .summary-grid button,
 .need-summary-row,
-.resource-detail .status-badge {
+.resource-detail .status-badge,
+.checked-options li > span {
   font-size: 0.875rem;
 }
 .situation-panel > .muted {
   font-size: 1rem;
 }
+.strategy-numbers small,
 .status-badge,
+.step-service,
 .unavailable-action {
   font-size: 0.75rem;
 }

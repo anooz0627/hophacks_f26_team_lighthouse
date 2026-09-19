@@ -1,10 +1,7 @@
-"use client";
-
 import type { Resource, ResourceStatus } from "@/lib/types";
 import { STATUS_LABEL, STATUS_OPTIONS, SERVICE_LABEL } from "@/lib/format";
 import Icon from "./Icon";
 import Modal from "./Modal";
-
 export default function AdminDrawer({
   open,
   onClose,
@@ -31,9 +28,10 @@ export default function AdminDrawer({
   );
   const locked = disabled || busyId !== null;
   return (
-    <Modal open={open} onClose={onClose} title="Resource availability" wide>
+    <Modal open={open} onClose={onClose} title="Simulate availability" wide>
       <p className="muted">
-        Your plan is checked again automatically when availability changes.
+        Changes apply to this local demo server. Your plan is checked again
+        automatically.
       </p>
       {error && (
         <p className="alert error" role="alert">
@@ -57,9 +55,9 @@ export default function AdminDrawer({
         </div>
       )}
       <div className="demo-toolbar">
-        <span>{resources.length} resources</span>
+        <span>{resources.length} illustrative resources</span>
         <button className="text-button" onClick={onReset} disabled={locked}>
-          Reset availability
+          Reset demo availability
         </button>
       </div>
       <div className="status-list">

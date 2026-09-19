@@ -1,5 +1,3 @@
-"use client";
-
 import type { Plan, PlanStep, Resource } from "@/lib/types";
 import {
   SERVICE_LABEL,
@@ -9,10 +7,8 @@ import {
 } from "@/lib/format";
 import Icon from "./Icon";
 import { ResourceActions, eligibility } from "./ResourceDetails";
-
 export const stepKey = (step: PlanStep) =>
   `${step.type}:${step.resource_id}:${step.time_iso}:${step.mode ?? ""}:${step.duration_min ?? 0}:${step.cost_usd}`;
-
 export default function Timeline({
   plan,
   resources,
@@ -37,10 +33,6 @@ export default function Timeline({
         .map((s) => s.time_iso.slice(0, 10)),
     ),
   ];
-  const tomorrow = new Date(`${plan.now.slice(0, 10)}T12:00:00Z`);
-  tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
-  const tomorrowDate = tomorrow.toISOString().slice(0, 10);
-
   return (
     <section
       className="timeline"
@@ -71,7 +63,10 @@ export default function Timeline({
             <h3>
               {date === plan.now.slice(0, 10)
                 ? "Tonight"
-                : date === tomorrowDate
+                : date ===
+                    new Date(
+                      new Date(plan.now).getTime() + 86400000,
+                    ).toLocaleDateString("en-CA")
                   ? "Tomorrow"
                   : new Date(`${date}T12:00:00`).toLocaleDateString("en-US", {
                       weekday: "long",
@@ -138,7 +133,7 @@ export default function Timeline({
                         )}
                         {isVisit && r && (
                           <span className={`status-badge ${r.status}`}>
-                            {STATUS_LABEL[r.status]}
+                            {STATUS_LABEL[r.status]} · demo
                           </span>
                         )}
                       </div>
@@ -220,11 +215,7 @@ export default function Timeline({
                         </>
                       ) : (
                         <>
-                          <p className="muted small">
-                            {step.type === "call" && r?.simulated
-                              ? "Contact the provider to confirm a place, intake time and required documents."
-                              : step.detail}
-                          </p>
+                          <p className="muted small">{step.detail}</p>
                           {r && step.type === "call" && (
                             <p className="small">
                               {r.eligibility.requires_id

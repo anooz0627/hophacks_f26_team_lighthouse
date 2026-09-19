@@ -1,15 +1,11 @@
-"use client";
-
 import type { Plan, Strategy } from "@/lib/types";
 import { formatUsd } from "@/lib/format";
 import Icon from "./Icon";
-
 export const STRATEGY_LABEL: Record<Strategy, string> = {
   recommended: "Recommended",
   fastest: "Fastest",
   lowest_cost: "Lowest cost",
 };
-
 export default function PlanComparison({
   plans,
   selected,
@@ -21,8 +17,7 @@ export default function PlanComparison({
   onSelect: (id: string) => void;
   note: string;
 }) {
-  const routes = plans.filter((plan) => plan.resource_ids.length > 0);
-  const routeCount = routes.length;
+  const routeCount = plans.filter((p) => p.resource_ids.length > 0).length;
   return (
     <section className="plan-comparison">
       <div className="section-kicker">
@@ -39,38 +34,37 @@ export default function PlanComparison({
       {routeCount > 0 && (
         <fieldset className="strategy-options">
           <legend className="sr-only">Plan strategy</legend>
-          {routes.map((plan) => (
+          {plans.map((p) => (
             <label
-              className={`strategy-card ${selected === plan.plan_id ? "active" : ""}`}
-              key={plan.plan_id}
+              className={`strategy-card ${selected === p.plan_id ? "active" : ""}`}
+              key={p.plan_id}
             >
               <input
                 type="radio"
                 name="plan-strategy"
-                value={plan.plan_id}
-                checked={selected === plan.plan_id}
-                onChange={() => onSelect(plan.plan_id)}
+                checked={selected === p.plan_id}
+                onChange={() => onSelect(p.plan_id)}
               />
               <span className="strategy-name">
                 <Icon
                   name={
-                    plan.strategy === "recommended"
+                    p.strategy === "recommended"
                       ? "shield"
-                      : plan.strategy === "fastest"
+                      : p.strategy === "fastest"
                         ? "clock"
                         : "route"
                   }
                   size={18}
                 />
-                {STRATEGY_LABEL[plan.strategy]}
+                {STRATEGY_LABEL[p.strategy]}
                 <span className="radio-dot" />
               </span>
               <span className="strategy-numbers">
-                {formatUsd(plan.total_cost_usd)}
-                <small> · {plan.total_travel_min} min travel</small>
+                {formatUsd(p.total_cost_usd)}
+                <small> · {p.total_travel_min} min travel</small>
               </span>
-              <span className="strategy-tradeoff">{plan.tradeoff}</span>
-              {!plan.feasible && (
+              <span className="strategy-tradeoff">{p.tradeoff}</span>
+              {!p.feasible && (
                 <span className="partial-label">Partial plan</span>
               )}
             </label>

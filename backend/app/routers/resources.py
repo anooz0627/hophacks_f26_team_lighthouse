@@ -19,14 +19,14 @@ def reset_resources() -> list[Resource]:
 
 @router.get("/{resource_id}", response_model=Resource)
 def get_resource(resource_id: str) -> Resource:
-    resource = store.get(resource_id)
-    if resource is None:
+    r = store.get(resource_id)
+    if not r:
         raise HTTPException(404, "resource not found")
-    return resource
+    return r
 
 
 @router.patch("/{resource_id}/status", response_model=Resource)
 def set_status(resource_id: str, body: StatusUpdate) -> Resource:
-    if store.get(resource_id) is None:
+    if not store.get(resource_id):
         raise HTTPException(404, "resource not found")
     return store.set_status(resource_id, body.status, body.capacity)

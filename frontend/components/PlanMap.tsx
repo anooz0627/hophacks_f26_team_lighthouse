@@ -63,7 +63,9 @@ function toPoints(polyline: number[][]): Point[] {
 
 function travelSteps(plan: Plan | null): PlanStep[] {
   if (!plan) return [];
-  return plan.steps.filter((s) => s.type === "travel" && s.polyline.length >= 2);
+  return plan.steps.filter(
+    (s) => s.type === "travel" && s.polyline.length >= 2,
+  );
 }
 
 function FitBounds({ points }: { points: Point[] }) {
@@ -175,7 +177,9 @@ export default function PlanMap({ plan, resources, previousPlan }: Props) {
             >
               <Tooltip sticky>
                 {MODE_LABEL[mode]}
-                {step.duration_min !== null ? ` · ~${step.duration_min} min` : ""}
+                {step.duration_min !== null
+                  ? ` · ~${step.duration_min} min`
+                  : ""}
               </Tooltip>
             </Polyline>
           );
@@ -193,7 +197,8 @@ export default function PlanMap({ plan, resources, previousPlan }: Props) {
             <Tooltip direction="top">
               <span className="font-semibold">{resource.name}</span>
               <br />
-              {SERVICE_LABEL[resource.service]} · {STATUS_LABEL[resource.status]}
+              {SERVICE_LABEL[resource.service]} ·{" "}
+              {STATUS_LABEL[resource.status]}
             </Tooltip>
           </Marker>
         ))}

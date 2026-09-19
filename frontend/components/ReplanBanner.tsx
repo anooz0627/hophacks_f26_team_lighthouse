@@ -1,8 +1,5 @@
-"use client";
-
 import type { PlanDiff, Resource } from "@/lib/types";
 import Icon from "./Icon";
-
 export default function ReplanBanner({
   diff,
   resources,
@@ -22,7 +19,7 @@ export default function ReplanBanner({
             ? "We found another way."
             : "Your plan needs attention."}
         </strong>
-        {diff.trigger && <p>{diff.trigger}.</p>}
+        <p>{diff.trigger}.</p>
         {diff.removed_resource_ids.length > 0 && (
           <div className="replacement-pair">
             <span>

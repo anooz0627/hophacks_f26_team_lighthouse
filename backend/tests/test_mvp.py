@@ -1,6 +1,6 @@
-import os
+"""End-to-end contract and planner regression tests for the interactive vertical slice."""
 from datetime import datetime
-
+import os
 os.environ["AIDGRAPH_DISABLE_LLM"] = "1"
 
 import pytest
@@ -95,7 +95,7 @@ def test_pets_and_accessibility_are_enforced():
     for rid in plan.resource_ids:
         assert store.get(rid).eligibility.pets_ok
         assert 'hearing_support' in store.get(rid).eligibility.accessibility
-    assert not plan.feasible
+    assert not plan.feasible  # no seeded food service has both policies confirmed
 
 
 def test_children_never_route_to_single_adult_shelters():
