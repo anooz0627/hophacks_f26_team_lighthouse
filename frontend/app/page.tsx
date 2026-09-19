@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import AdminDrawer from "@/components/AdminDrawer";
+import Assistant, { type AssistantState } from "@/components/Assistant";
 import ConstraintFields from "@/components/ConstraintFields";
 import ConstraintsPanel from "@/components/ConstraintsPanel";
 import Header from "@/components/Header";
@@ -59,7 +60,11 @@ export default function Home() {
   const [adminOpen, setAdminOpen] = useState(false);
   const [adminBusyId, setAdminBusyId] = useState<string | null>(null);
   const [completed, setCompleted] = useState<Set<string>>(new Set());
+  const [assistant, setAssistant] = useState<AssistantState>("idle");
+  const [guideMessage, setGuideMessage] = useState<string | undefined>();
   const [invalidated, setInvalidated] = useState(false);
+  const [contextOpen, setContextOpen] = useState(false);
+  const planColumn = useRef<HTMLDivElement>(null);
   const operation = useRef(false);
   const reviewHeading = useRef<HTMLHeadingElement>(null);
   const plan =
@@ -88,6 +93,8 @@ export default function Home() {
   useEffect(() => {
     if (phase === "review" || phase === "planned") {
       reviewHeading.current?.focus({ preventScroll: true });
+      if (window.matchMedia("(max-width: 780px)").matches)
+        planColumn.current?.scrollIntoView({ block: "start" });
     }
   }, [phase]);
   const setSituation = (value: string, example = false) => {
@@ -98,6 +105,8 @@ export default function Home() {
     setCompleted(new Set());
     setError(null);
     setInvalidated(false);
+    setAssistant(value ? "listening" : "idle");
+    setGuideMessage(undefined);
     if (example) {
       setOverrides({});
       setNeedOverrides(null);
@@ -108,6 +117,8 @@ export default function Home() {
     if (operation.current || !text.trim()) return;
     operation.current = true;
     setPhase("extracting");
+    setAssistant("understanding");
+    setGuideMessage(undefined);
     setError(null);
     try {
       const [uc, list] = await Promise.all([
@@ -128,12 +139,25 @@ export default function Home() {
         ),
       };
       setConstraints(reviewed);
+      setContextOpen(false);
       setBundle(null);
       setCompleted(new Set());
       setPhase("review");
+      setAssistant("warning");
+      const missing = [
+        reviewed.constraints.age === null ? "age" : null,
+        reviewed.constraints.budget_usd === null ? "budget" : null,
+        reviewed.constraints.has_id === null ? "photo ID" : null,
+      ].filter(Boolean);
+      setGuideMessage(
+        missing.length
+          ? `Please check ${missing.join(", ")}. Unknown details may leave eligibility or cost uncertain.`
+          : "Check your needs and details. When they look right, I’ll find your options.",
+      );
     } catch (err) {
       setError(errorMessage(err));
       setPhase("idle");
+      setAssistant("warning");
     } finally {
       operation.current = false;
     }
@@ -152,12 +176,16 @@ export default function Home() {
         ? new Set(active.steps.map(stepKey).filter((key) => old.has(key)))
         : new Set(),
     );
+    setAssistant(active.feasible ? "ready" : "no-plan");
+    setGuideMessage(undefined);
   };
   const build = async (uc: UserConstraints, previous?: Plan) => {
     if (operation.current) return;
     operation.current = true;
     setError(null);
     setPhase(previous ? "replanning" : "planning");
+    setAssistant(previous ? "replanning" : "building");
+    setGuideMessage(undefined);
     try {
       const [next, list] = await Promise.all([
         generatePlans(uc, DEMO_NOW, previous?.plan_id),
@@ -169,6 +197,7 @@ export default function Home() {
     } catch (err) {
       setError(errorMessage(err));
       setPhase(previous ? "planned" : "review");
+      setAssistant("warning");
     } finally {
       operation.current = false;
     }
@@ -182,7 +211,11 @@ export default function Home() {
     const current = plan;
     const changesActive =
       !!current && (!id || current.resource_ids.includes(id));
-    if (current) setPhase("replanning");
+    if (current) {
+      setPhase("replanning");
+      setAssistant("replanning");
+      setGuideMessage(undefined);
+    }
     if (changesActive) {
       setInvalidated(true);
       setPhase("replanning");
@@ -209,6 +242,8 @@ export default function Home() {
           : errorMessage(err),
       );
       setPhase(current ? "planned" : constraints ? "review" : "idle");
+      setAssistant("warning");
+      setGuideMessage(undefined);
     } finally {
       setAdminBusyId(null);
       operation.current = false;
@@ -220,6 +255,19 @@ export default function Home() {
     if (next.has(key)) next.delete(key);
     else next.add(key);
     setCompleted(next);
+    setAssistant(
+      next.has(key) ? "completed" : plan?.feasible ? "ready" : "no-plan",
+    );
+    const upcoming = plan?.steps.find(
+      (s) => s.type !== "note" && !next.has(stepKey(s)),
+    );
+    setGuideMessage(
+      next.has(key)
+        ? upcoming
+          ? `Done. Next: ${upcoming.title.toLowerCase()}.`
+          : "You’ve completed the steps in this plan. You can revisit any resource details here."
+        : undefined,
+    );
   };
   const stage = plan ? 2 : constraints ? 1 : 0;
   const completedCount =
@@ -260,7 +308,24 @@ export default function Home() {
 
         <div className={`planner-layout ${constraints ? "has-context" : ""}`}>
           <div className="context-column">
-            <div className="context-content">
+            {constraints && (
+              <button
+                className="mobile-context-toggle"
+                onClick={() => setContextOpen(!contextOpen)}
+                aria-expanded={contextOpen}
+                aria-controls="situation-details"
+              >
+                <Icon name="edit" size={17} />
+                {contextOpen
+                  ? "Hide situation & details"
+                  : "Your situation & details"}
+                <Icon name="chevron" size={17} />
+              </button>
+            )}
+            <div
+              id="situation-details"
+              className={`context-content ${contextOpen ? "expanded" : ""}`}
+            >
               <SituationInput
                 text={text}
                 onTextChange={setSituation}
@@ -285,7 +350,12 @@ export default function Home() {
               )}
             </div>
           </div>
-          <div className="plan-column">
+          <div className="plan-column" ref={planColumn}>
+            <Assistant
+              state={assistant}
+              message={guideMessage}
+              reviewing={phase === "review" && !error}
+            />
             {resourceError && !adminOpen && (
               <div className="alert error" role="alert">
                 {resourceError}
@@ -442,6 +512,12 @@ export default function Home() {
                         setBundle((old) =>
                           old ? { ...old, diff: null } : null,
                         );
+                        setAssistant(
+                          bundle!.plans.find((p) => p.plan_id === id)!.feasible
+                            ? "ready"
+                            : "no-plan",
+                        );
+                        setGuideMessage(undefined);
                       }}
                     />
                     <div className="plan-overview">
@@ -509,6 +585,12 @@ export default function Home() {
               setBundle(null);
               setCompleted(new Set());
               setPhase("review");
+              setContextOpen(false);
+              setError(null);
+              setAssistant("warning");
+              setGuideMessage(
+                "Your changes are saved. Find your options to check the updated route.",
+              );
             }}
           >
             <ConstraintFields
