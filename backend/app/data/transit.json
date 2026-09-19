@@ -1,0 +1,133 @@
+{
+  "walk_speed_kmh": 4.5,
+  "max_walk_km": 3.0,
+  "routes": [
+    {
+      "id": "citylink_red",
+      "name": "CityLink Red",
+      "fare": 2.0,
+      "headway_min": 15,
+      "avg_speed_kmh": 22,
+      "stops": [
+        {
+          "name": "West Baltimore",
+          "lat": 39.2895,
+          "lng": -76.645
+        },
+        {
+          "name": "Lexington Market",
+          "lat": 39.291,
+          "lng": -76.6215
+        },
+        {
+          "name": "Charles Center",
+          "lat": 39.2905,
+          "lng": -76.615
+        },
+        {
+          "name": "City Hall / Old Town",
+          "lat": 39.295,
+          "lng": -76.606
+        },
+        {
+          "name": "Johns Hopkins Hospital",
+          "lat": 39.2965,
+          "lng": -76.592
+        },
+        {
+          "name": "Patterson Park",
+          "lat": 39.2935,
+          "lng": -76.581
+        },
+        {
+          "name": "Highlandtown",
+          "lat": 39.288,
+          "lng": -76.57
+        }
+      ]
+    },
+    {
+      "id": "citylink_blue",
+      "name": "CityLink Blue",
+      "fare": 2.0,
+      "headway_min": 15,
+      "avg_speed_kmh": 22,
+      "stops": [
+        {
+          "name": "Charles Village",
+          "lat": 39.32,
+          "lng": -76.616
+        },
+        {
+          "name": "North Ave / Charles",
+          "lat": 39.3115,
+          "lng": -76.6165
+        },
+        {
+          "name": "Penn Station",
+          "lat": 39.307,
+          "lng": -76.6155
+        },
+        {
+          "name": "Mount Vernon",
+          "lat": 39.2975,
+          "lng": -76.615
+        },
+        {
+          "name": "Charles Center",
+          "lat": 39.2905,
+          "lng": -76.615
+        },
+        {
+          "name": "Inner Harbor",
+          "lat": 39.2865,
+          "lng": -76.613
+        },
+        {
+          "name": "Federal Hill",
+          "lat": 39.279,
+          "lng": -76.611
+        },
+        {
+          "name": "Brooklyn / Hanover St",
+          "lat": 39.24,
+          "lng": -76.605
+        }
+      ]
+    },
+    {
+      "id": "citylink_green",
+      "name": "CityLink Green",
+      "fare": 2.0,
+      "headway_min": 20,
+      "avg_speed_kmh": 22,
+      "stops": [
+        {
+          "name": "Lexington Market",
+          "lat": 39.291,
+          "lng": -76.6215
+        },
+        {
+          "name": "City Hall / Old Town",
+          "lat": 39.295,
+          "lng": -76.606
+        },
+        {
+          "name": "Broadway East",
+          "lat": 39.3085,
+          "lng": -76.587
+        },
+        {
+          "name": "Clifton Park",
+          "lat": 39.316,
+          "lng": -76.585
+        },
+        {
+          "name": "Waverly",
+          "lat": 39.328,
+          "lng": -76.605
+        }
+      ]
+    }
+  ]
+}

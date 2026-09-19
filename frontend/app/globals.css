@@ -113,6 +113,67 @@ svg {
 .skip-link:focus {
   transform: translateY(0);
 }
+.site-header {
+  background: rgba(255, 255, 255, 0.96);
+  border-bottom: 1px solid var(--line);
+}
+.header-inner {
+  max-width: 1280px;
+  min-height: 74px;
+  margin: auto;
+  padding: 16px 34px;
+  display: flex;
+  align-items: center;
+  gap: 34px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  font-size: 1.45rem;
+  font-weight: 750;
+  letter-spacing: -0.06em;
+}
+.brand:hover {
+  text-decoration: none;
+}
+.brand > span:last-child {
+  color: var(--purple);
+}
+.brand-mark {
+  width: 39px;
+  height: 39px;
+  background: var(--purple);
+  color: white;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  margin-right: 11px;
+}
+.region {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 0.875rem;
+  border-left: 1px solid var(--line);
+  padding-left: 26px;
+}
+.header-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+.demo-tag {
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+  border: 1px solid #e3deeb;
+  border-radius: 5px;
+  padding: 4px 7px;
+  color: #6d587c;
+}
 .button {
   min-height: 44px;
   border: 1px solid var(--line);
@@ -770,6 +831,17 @@ input[type="radio"] {
   font-size: 0.75rem;
   overflow-wrap: anywhere;
 }
+.aidgraph-marker {
+  background: transparent !important;
+  border: 0 !important;
+}
+.leaflet-container {
+  font-family: inherit;
+}
+.leaflet-tooltip {
+  font-size: 14px;
+  line-height: 1.3;
+}
 @media (min-width: 1450px) {
   .main-shell {
     padding-top: 48px;
@@ -782,9 +854,13 @@ input[type="radio"] {
   }
 }
 @media (max-width: 1050px) {
+  .header-inner,
   .main-shell {
     padding-left: 24px;
     padding-right: 24px;
+  }
+  .region {
+    display: none;
   }
   .planner-layout {
     grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
