@@ -1673,3 +1673,248 @@ input[type="radio"] {
     scroll-margin-top: 16px;
   }
 }
+
+.empty-plan {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background: linear-gradient(160deg, #fff 55%, #f2f0f6);
+  padding: 30px 30px 0;
+  text-align: center;
+  min-height: 462px;
+}
+.empty-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #74667f;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+}
+.empty-path {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 45px 0 25px;
+}
+.empty-path span {
+  width: 62px;
+  height: 62px;
+  border-radius: 19px;
+  background: #f4eee5;
+  border: 1px solid #ebe1d1;
+  color: #987e53;
+  display: grid;
+  place-items: center;
+}
+.empty-path span:nth-of-type(2) {
+  width: 86px;
+  height: 86px;
+  border-radius: 25px;
+  border: 1px solid #d9cde9;
+  background: #ebe4f5;
+  color: var(--purple);
+  box-shadow: 0 9px 22px #5841770e;
+}
+.empty-path span:nth-of-type(3) {
+  color: #617d70;
+  border-color: #dce6df;
+  background: #ebf1ec;
+}
+.empty-path i {
+  border-top: 2px dotted #c9c0d5;
+  width: 40px;
+}
+.empty-plan h2 {
+  font-family: var(--font-sans);
+  font-size: 1.9rem;
+  font-weight: 650;
+  line-height: 1.25;
+  letter-spacing: -0.04em;
+  margin-bottom: 13px;
+}
+.empty-plan > p {
+  font-size: 0.875rem;
+  line-height: 1.7;
+  color: var(--muted);
+}
+.empty-checks {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 16px;
+  margin: 26px 0;
+  color: #716a7b;
+  font-size: 0.6875rem;
+}
+.empty-checks > span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.empty-checks svg {
+  color: #6a8b78;
+}
+.empty-bottom {
+  margin: 28px -30px 0;
+  padding: 17px;
+  border-top: 1px solid #e8e3ec;
+  background: #ffffff65;
+  font-size: 0.6875rem;
+  color: #716578;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+.tiny-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #a58cbf;
+}
+.review-area {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.review-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: space-between;
+  align-items: center;
+}
+.review-actions p {
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+.plan-overview {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 17px 7px;
+}
+.plan-overview > div {
+  padding: 0 15px;
+  border-right: 1px solid var(--line);
+}
+.plan-overview > div:last-child {
+  border: 0;
+}
+.plan-overview span {
+  font-size: 0.6875rem;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 4px;
+}
+.plan-overview strong {
+  font-size: 1.2rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+.plan-overview small {
+  font-weight: 400;
+  font-size: 0.6875rem;
+  color: var(--muted);
+  letter-spacing: 0;
+}
+.invalid-plan {
+  text-align: center;
+  padding: 45px 25px;
+}
+.invalid-plan h2 {
+  margin: 14px 0 10px;
+}
+.invalid-plan p {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+.priority-editor {
+  margin-top: 22px;
+  font-size: 0.8125rem;
+}
+.priority-editor summary {
+  padding: 10px 0;
+}
+.priority-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 13px 0;
+  border-top: 1px solid var(--line);
+}
+.priority-row strong {
+  grid-column: 1/-1;
+}
+.priority-row select {
+  margin-top: 5px;
+}
+@media (max-width: 1050px) {
+  .plan-overview > div {
+    padding: 0 10px;
+  }
+  .plan-overview small {
+    display: block;
+  }
+}
+@media (max-width: 780px) {
+  .plan-overview small {
+    display: inline;
+  }
+  .empty-plan {
+    min-height: 415px;
+  }
+  .empty-path {
+    margin-top: 30px;
+  }
+}
+@media (max-width: 480px) {
+  .empty-plan {
+    padding: 24px 20px 0;
+  }
+  .empty-plan h2 {
+    font-size: 1.75rem;
+  }
+  .empty-bottom {
+    margin-left: -20px;
+    margin-right: -20px;
+  }
+  .empty-checks {
+    font-size: 0.6875rem;
+  }
+  .empty-path i {
+    width: 25px;
+  }
+  .review-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .review-actions p {
+    text-align: center;
+  }
+  .plan-overview {
+    padding: 13px 3px;
+  }
+  .plan-overview > div {
+    padding: 0 9px;
+  }
+  .plan-overview strong {
+    font-size: 1.1rem;
+  }
+  .plan-overview small {
+    display: block;
+  }
+}
+.empty-plan > p {
+  font-size: 1rem;
+}
+
+.context-content {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}

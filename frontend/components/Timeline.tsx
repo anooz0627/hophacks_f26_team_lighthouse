@@ -138,7 +138,7 @@ export default function Timeline({
                         )}
                         {isVisit && r && (
                           <span className={`status-badge ${r.status}`}>
-                            {STATUS_LABEL[r.status]} · demo
+                            {STATUS_LABEL[r.status]}
                           </span>
                         )}
                       </div>
@@ -220,7 +220,11 @@ export default function Timeline({
                         </>
                       ) : (
                         <>
-                          <p className="muted small">{step.detail}</p>
+                          <p className="muted small">
+                            {step.type === "call" && r?.simulated
+                              ? "Contact the provider to confirm a place, intake time and required documents."
+                              : step.detail}
+                          </p>
                           {r && step.type === "call" && (
                             <p className="small">
                               {r.eligibility.requires_id

@@ -15,10 +15,9 @@ export default function Header({ onOpenAdmin }: { onOpenAdmin: () => void }) {
           <Icon name="pin" size={16} /> Baltimore, Maryland
         </span>
         <div className="header-actions">
-          <span className="demo-tag">LOCAL DEMO</span>
           <button className="button button-quiet" onClick={onOpenAdmin}>
             <Icon name="settings" size={17} />
-            <span>Demo controls</span>
+            <span>Availability</span>
           </button>
         </div>
       </div>

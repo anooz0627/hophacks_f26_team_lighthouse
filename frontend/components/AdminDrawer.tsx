@@ -31,10 +31,9 @@ export default function AdminDrawer({
   );
   const locked = disabled || busyId !== null;
   return (
-    <Modal open={open} onClose={onClose} title="Simulate availability" wide>
+    <Modal open={open} onClose={onClose} title="Resource availability" wide>
       <p className="muted">
-        Changes apply to this local demo server. Your plan is checked again
-        automatically.
+        Your plan is checked again automatically when availability changes.
       </p>
       {error && (
         <p className="alert error" role="alert">
@@ -58,9 +57,9 @@ export default function AdminDrawer({
         </div>
       )}
       <div className="demo-toolbar">
-        <span>{resources.length} illustrative resources</span>
+        <span>{resources.length} resources</span>
         <button className="text-button" onClick={onReset} disabled={locked}>
-          Reset demo availability
+          Reset availability
         </button>
       </div>
       <div className="status-list">
