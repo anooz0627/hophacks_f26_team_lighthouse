@@ -99,6 +99,9 @@ export function resetResources(): Promise<Resource[]> {
 export function getHealth(): Promise<Health> {
   return request<Health>("/health");
 }
+export function planAudioUrl(planId: string): string {
+  return `${API_BASE}/plans/${encodeURIComponent(planId)}/audio`;
+}
 export function errorMessage(err: unknown): string {
   if (err instanceof Error) return err.message || "Something went wrong.";
   if (typeof err === "string") return err;

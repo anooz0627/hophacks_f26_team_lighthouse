@@ -207,6 +207,7 @@ export interface StatusUpdate {
 export interface Health {
   ok: boolean;
   llm: boolean;
+  voice: boolean;
   resources: number;
 }
 export interface PlanBundle {

@@ -17,6 +17,7 @@ const paths = {
   settings: "M4 7h16M4 17h16M8 4v6m8 4v6",
   chevron: "m6 9 6 6 6-6",
   route: "M6 5h10a4 4 0 0 1 0 8H8a4 4 0 0 0 0 8h10M6 3v4m12 12v4",
+  speaker: "M11 5 6 9H2v6h4l5 4V5Zm4.5 3.5a5 5 0 0 1 0 7M18 6a8.5 8.5 0 0 1 0 12",
   info: "M12 11v6m0-10v.1M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0Z",
 };
 export type IconName = keyof typeof paths;

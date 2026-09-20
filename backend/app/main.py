@@ -5,6 +5,7 @@ from .llm_client import llm_enabled
 from .models import Health
 from .routers import plan, resources
 from .store import store
+from .voice import voice_enabled
 
 app = FastAPI(title="AidGraph API", version="0.1.0")
 app.add_middleware(
@@ -20,4 +21,4 @@ app.include_router(resources.router)
 
 @app.get("/health", response_model=Health)
 def health() -> Health:
-    return Health(ok=True, llm=llm_enabled(), resources=len(store.resources))
+    return Health(ok=True, llm=llm_enabled(), voice=voice_enabled(), resources=len(store.resources))

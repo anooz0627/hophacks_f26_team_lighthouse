@@ -3,10 +3,10 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response
 from pydantic import ValidationError
 
-from .. import explain
+from .. import explain, voice
 from ..extraction import extract as extraction
 from ..models import (ExtractRequest, Plan, PlanBundle, PlanBundleRequest, PlanRequest, ReplanRequest,
                       ReplanResponse, UserConstraints)
@@ -79,3 +79,27 @@ def replan(body: ReplanRequest) -> ReplanResponse:
 def plan_strategies(body: PlanBundleRequest) -> PlanBundle:
     validate_constraints(body.constraints)
     return make_bundle(body.constraints, body.now, body.previous_plan_id)
+
+
+def saved_plan(plan_id: str) -> Plan:
+    plan = store.get_plan(plan_id)
+    if plan is None:
+        raise HTTPException(404, "plan not found")
+    return plan
+
+
+@router.get("/plans/{plan_id}/script")
+def plan_script(plan_id: str) -> dict[str, str]:
+    return {"text": explain.narrate(saved_plan(plan_id))}
+
+
+@router.get("/plans/{plan_id}/audio")
+def plan_audio(plan_id: str) -> Response:
+    plan = saved_plan(plan_id)
+    if not voice.voice_enabled():
+        raise HTTPException(503, "Voice playback is not configured on this server.")
+    try:
+        data = voice.audio_for(plan.plan_id, explain.narrate(plan))
+    except Exception as exc:
+        raise HTTPException(502, "Voice playback is temporarily unavailable.") from exc
+    return Response(content=data, media_type="audio/mpeg", headers={"cache-control": "private, max-age=600"})

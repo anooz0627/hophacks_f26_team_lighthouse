@@ -248,4 +248,5 @@ class StatusUpdate(BaseModel):
 class Health(BaseModel):
     ok: bool
     llm: bool
+    voice: bool = False
     resources: int

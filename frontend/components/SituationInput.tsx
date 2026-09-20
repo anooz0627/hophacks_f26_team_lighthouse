@@ -15,6 +15,11 @@ export const EXAMPLES = [
   "Me and my two kids got evicted this morning. I have my ID and $25 but no car. We need dinner and somewhere to stay tonight.",
   "I'm 22, in Mount Vernon. I need food tonight, have no money, and can only walk.",
 ];
+const SCENARIOS = [
+  { label: "A place for tonight", icon: "home" },
+  { label: "Help for my family", icon: "support" },
+  { label: "A meal nearby", icon: "food" },
+] as const;
 export default function SituationInput({
   text,
   onTextChange,
@@ -102,24 +107,19 @@ export default function SituationInput({
         </button>
         <p className="example-label">Or start with an example</p>
         <div className="scenario-buttons">
-          {["A place for tonight", "Help for my family", "A meal nearby"].map(
-            (label, i) => (
-              <button
-                key={label}
-                type="button"
-                className="scenario"
-                disabled={busy}
-                onClick={() => onTextChange(EXAMPLES[i], true)}
-              >
-                <Icon
-                  name={(["home", "support", "food"] as const)[i]}
-                  size={16}
-                />
-                {label}
-                <span aria-hidden>↗</span>
-              </button>
-            ),
-          )}
+          {SCENARIOS.map(({ label, icon }, i) => (
+            <button
+              key={label}
+              type="button"
+              className="scenario"
+              disabled={busy}
+              onClick={() => onTextChange(EXAMPLES[i], true)}
+            >
+              <Icon name={icon} size={16} />
+              {label}
+              <span aria-hidden>↗</span>
+            </button>
+          ))}
         </div>
         <details className="customize">
           <summary>

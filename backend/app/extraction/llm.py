@@ -4,7 +4,7 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
-from ..llm_client import generation_config, get_client, model_id
+from ..llm_client import generate, generation_config, get_client
 from ..models import Constraints, Need, ServiceType, UserConstraints
 
 
@@ -73,15 +73,16 @@ def extract(text: str) -> Optional[UserConstraints]:
     if client is None:
         return None
     try:
-        resp = client.models.generate_content(
-            model=model_id(),
-            contents=_contents(text),
-            config=generation_config(
+        resp = generate(
+            _contents(text),
+            generation_config(
                 system_instruction=SYSTEM,
                 response_mime_type="application/json",
                 response_schema=Extraction,
             ),
         )
+        if resp is None:
+            return None
         parsed = resp.parsed
         if parsed is None:
             return None

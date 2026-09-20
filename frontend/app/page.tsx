@@ -6,6 +6,7 @@ import Assistant, { type AssistantState } from "@/components/Assistant";
 import ConstraintFields from "@/components/ConstraintFields";
 import ConstraintsPanel from "@/components/ConstraintsPanel";
 import Header from "@/components/Header";
+import ListenButton from "@/components/ListenButton";
 import Icon from "@/components/Icon";
 import Modal from "@/components/Modal";
 import PlanComparison from "@/components/PlanComparison";
@@ -18,6 +19,7 @@ import { Spinner } from "@/components/ui";
 import {
   extract,
   generatePlans,
+  getHealth,
   getResources,
   setResourceStatus,
   resetResources,
@@ -33,6 +35,7 @@ import {
 import type {
   Constraints,
   Deadline,
+  Health,
   Need,
   Plan,
   PlanBundle,
@@ -60,6 +63,7 @@ export default function Home() {
   const [bundle, setBundle] = useState<PlanBundle | null>(null);
   const [selected, setSelected] = useState("");
   const [resources, setResources] = useState<Resource[]>([]);
+  const [health, setHealth] = useState<Health | null>(null);
   const [resourceError, setResourceError] = useState<string | null>(null);
   const [detailId, setDetailId] = useState<string | null>(null);
   const [edit, setEdit] = useState<UserConstraints | null>(null);
@@ -94,6 +98,11 @@ export default function Home() {
       .catch((err) => {
         if (!cancelled) setResourceError(errorMessage(err));
       });
+    getHealth()
+      .then((h) => {
+        if (!cancelled) setHealth(h);
+      })
+      .catch(() => {});
     return () => {
       cancelled = true;
     };
@@ -539,6 +548,9 @@ export default function Home() {
                         setGuideMessage(undefined);
                       }}
                     />
+                    {health?.voice && (
+                      <ListenButton key={plan.plan_id} planId={plan.plan_id} />
+                    )}
                     <div className="plan-overview">
                       <div>
                         <span>Estimated total</span>

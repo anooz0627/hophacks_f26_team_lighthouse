@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import json
+from collections import OrderedDict
 
-from .llm_client import generation_config, get_client, model_id
+from .llm_client import generate, generation_config, get_client
 from .models import Plan
+from .voice import speech_script
 
 SYSTEM = (
     "You write a short, calm, practical summary of a plan for someone in crisis. "
@@ -11,6 +13,8 @@ SYSTEM = (
     "and what to bring. Only use facts present in the JSON. Do not add resources, times, or requirements "
     "that are not in the plan. Do not promise that a service will accept them. No markdown, no lists."
 )
+
+_cache: OrderedDict[str, str] = OrderedDict()
 
 
 def template(plan: Plan) -> str:
@@ -34,9 +38,11 @@ def template(plan: Plan) -> str:
 
 
 def summarize(plan: Plan) -> str:
-    client = get_client()
-    if client is None:
+    if get_client() is None:
         return template(plan)
+    key = f"{plan.plan_id}:{len(plan.steps)}"
+    if key in _cache:
+        return _cache[key]
     compact = {
         "steps": [{"time": s.time, "day": s.day_label, "title": s.title, "detail": s.detail, "bring": s.bring,
                    "warnings": s.warnings} for s in plan.steps],
@@ -44,12 +50,17 @@ def summarize(plan: Plan) -> str:
         "unmet_needs": [u.value for u in plan.unmet_needs],
     }
     try:
-        resp = client.models.generate_content(
-            model=model_id(),
-            contents=json.dumps(compact),
-            config=generation_config(system_instruction=SYSTEM, max_output_tokens=300),
-        )
-        text = (resp.text or "").strip()
-        return text or template(plan)
+        resp = generate(json.dumps(compact), generation_config(system_instruction=SYSTEM, max_output_tokens=300))
+        text = (resp.text or "").strip() if resp is not None else ""
     except Exception:
+        text = ""
+    if not text:
         return template(plan)
+    _cache[key] = text
+    if len(_cache) > 64:
+        _cache.popitem(last=False)
+    return text
+
+
+def narrate(plan: Plan) -> str:
+    return speech_script(plan)

@@ -2329,3 +2329,15 @@ input[type="radio"] {
     display: none;
   }
 }
+
+.listen-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  margin: 14px 0 4px;
+}
+.listen-row .button[aria-pressed="true"] {
+  background: var(--purple-light);
+  border-color: #c9bcde;
+}
