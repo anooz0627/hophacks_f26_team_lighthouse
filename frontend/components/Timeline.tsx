@@ -27,6 +27,11 @@ export default function Timeline({
   onComplete: (step: PlanStep) => void;
   onDetails: (resource: Resource) => void;
 }) {
+  const nextKey =
+    plan.steps
+      .filter((s) => s.type !== "note")
+      .map((s) => stepKey(s))
+      .find((k) => !completed.has(k)) ?? null;
   const dates = [
     ...new Set(
       plan.steps
@@ -73,6 +78,7 @@ export default function Timeline({
               .map((step) => {
                 const r = resources.find((r) => r.id === step.resource_id);
                 const done = completed.has(stepKey(step));
+                const isNext = nextKey === stepKey(step);
                 const isVisit = step.type === "visit";
                 const travel = plan.steps.find(
                   (s) =>
@@ -197,16 +203,6 @@ export default function Timeline({
                               View resource details
                               <Icon name="arrow" size={15} />
                             </button>
-                            <button
-                              className={`complete-button ${done ? "is-complete" : ""}`}
-                              aria-pressed={done}
-                              onClick={() => onComplete(step)}
-                            >
-                              <span className="complete-box">
-                                {done && <Icon name="check" size={13} />}
-                              </span>
-                              {done ? "Completed" : "Mark step complete"}
-                            </button>
                           </div>
                         </>
                       ) : (
@@ -229,20 +225,24 @@ export default function Timeline({
                                 compact
                               />
                             )}
-                            <button
-                              className={`complete-button ${done ? "is-complete" : ""}`}
-                              aria-pressed={done}
-                              onClick={() => onComplete(step)}
-                            >
-                              <span className="complete-box">
-                                {done && <Icon name="check" size={13} />}
-                              </span>
-                              {done ? "Completed" : "Mark step complete"}
-                            </button>
                           </div>
                         </>
                       )}
                     </article>
+                    <button
+                      type="button"
+                      className={`milestone ${done ? "is-done" : ""} ${isNext ? "is-next" : ""}`}
+                      aria-pressed={done}
+                      aria-label={`${done ? "Undo" : "Mark done"}: ${step.title}`}
+                      onClick={() => onComplete(step)}
+                    >
+                      <span className="milestone-circle">
+                        <Icon name="check" size={22} />
+                      </span>
+                      <span className="milestone-label">
+                        {done ? "Done" : isNext ? "Next" : "Mark done"}
+                      </span>
+                    </button>
                   </li>
                 );
               })}

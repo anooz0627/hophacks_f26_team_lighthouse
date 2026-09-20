@@ -1,6 +1,6 @@
-# AidGraph frontend
+# Lighthouse frontend
 
-Next.js 16 and React 19 interface for the AidGraph Baltimore planning demo.
+Next.js 16 and React 19 interface for the Lighthouse Baltimore planning demo.
 
 ```bash
 npm ci

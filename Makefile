@@ -1,4 +1,4 @@
-# AidGraph developer tasks. Run `make help` for the list.
+# Lighthouse developer tasks. Run `make help` for the list.
 # Paths stay relative: make cannot handle the space in this repo's absolute path.
 SHELL := /bin/bash
 

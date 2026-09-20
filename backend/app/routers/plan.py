@@ -78,7 +78,7 @@ def replan(body: ReplanRequest) -> ReplanResponse:
 @router.post("/plans", response_model=PlanBundle)
 def plan_strategies(body: PlanBundleRequest) -> PlanBundle:
     validate_constraints(body.constraints)
-    return make_bundle(body.constraints, body.now, body.previous_plan_id)
+    return make_bundle(body.constraints, body.now, body.previous_plan_id, body.progress)
 
 
 def saved_plan(plan_id: str) -> Plan:

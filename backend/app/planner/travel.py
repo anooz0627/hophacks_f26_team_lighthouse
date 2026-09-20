@@ -8,7 +8,8 @@ from ..models import Constraints, LatLng, TransitData
 
 Point = tuple[float, float]
 
-MAX_WALK_TO_STOP_KM = 1.0
+MAX_WALK_TO_STOP_KM = 2.0
+LONG_WALK_KM = 8.0
 TRANSFER_RADIUS_KM = 0.15
 TRANSFER_PENALTY_MIN = 3
 CAR_SPEED_KMH = 30.0
@@ -31,15 +32,17 @@ class TravelLeg:
     walk_from_stop_min: int = 0
     distance_km: float = 0.0
     notes: list[str] = field(default_factory=list)
+    long_walk: bool = False
 
     def describe(self) -> str:
         if self.mode == "walk":
-            return f"Walk {self.distance_km:.1f} km · ~{self.duration_min} min"
+            tag = " · long walk, confirm you are able" if self.long_walk else ""
+            return f"Walk {self.distance_km:.1f} km · ~{self.duration_min} min{tag}"
         if self.mode == "rideshare":
             return f"Rideshare estimate · ~{self.duration_min} min · ${self.cost_usd:.2f}; confirm fare and accessible vehicle"
         if self.mode == "car":
             return f"Drive {self.distance_km:.1f} km · ~{self.duration_min} min"
-        transfer = f" {self.notes[0]}." if self.notes else ""
+        transfer = "".join(f" {note}." for note in self.notes)
         return (
             f"Walk to {self.board_stop} ({self.walk_to_stop_min} min), "
             f"ride {self.route_name} to {self.alight_stop} (~{self.ride_min} min).{transfer} "
@@ -93,14 +96,15 @@ def bus_legs(a: Point, b: Point, transit: TransitData) -> list[TravelLeg]:
         ride_min = _minutes(ride_km, route.avg_speed_kmh) + (hi - lo)
         w1 = _minutes(da, transit.walk_speed_kmh)
         w2 = _minutes(db, transit.walk_speed_kmh)
-        wait = route.headway_min // 2
+        wait = route.headway_min // 2 + route.delay_min
         seq = range(ia, ib + 1) if ia < ib else range(ia, ib - 1, -1)
         poly = [[a[0], a[1]]] + [[stops[i].lat, stops[i].lng] for i in seq] + [[b[0], b[1]]]
+        notes = [f"{route.name} delayed {route.delay_min} min"] if route.delay_min else []
         legs.append(TravelLeg(
             mode="bus", duration_min=w1 + wait + ride_min + w2, cost_usd=route.fare, polyline=poly,
             route_id=route.id, route_name=route.name, board_stop=stops[ia].name, alight_stop=stops[ib].name,
             walk_to_stop_min=w1, wait_min=wait, ride_min=ride_min, walk_from_stop_min=w2,
-            distance_km=da + ride_km + db,
+            distance_km=da + ride_km + db, notes=notes,
         ))
     return legs
 
@@ -142,14 +146,14 @@ def transfer_legs(a: Point, b: Point, transit: TransitData) -> list[TravelLeg]:
                     km2, m2, poly2 = _ride(r2, x2, ib)
                     w1 = _minutes(da, transit.walk_speed_kmh)
                     w2 = _minutes(db, transit.walk_speed_kmh)
-                    wait = r1.headway_min // 2 + r2.headway_min // 2 + TRANSFER_PENALTY_MIN
+                    wait = r1.headway_min // 2 + r2.headway_min // 2 + TRANSFER_PENALTY_MIN + r1.delay_min + r2.delay_min
                     poly = [[a[0], a[1]]] + poly1 + poly2 + [[b[0], b[1]]]
                     legs.append(TravelLeg(
                         mode="bus", duration_min=w1 + wait + m1 + m2 + w2, cost_usd=r1.fare + r2.fare, polyline=poly,
                         route_id=f"{r1.id}+{r2.id}", route_name=f"{r1.name} → {r2.name}",
                         board_stop=s1[ia].name, alight_stop=s2[ib].name, walk_to_stop_min=w1, wait_min=wait,
                         ride_min=m1 + m2, walk_from_stop_min=w2, distance_km=da + km1 + km2 + db,
-                        notes=[f"Transfer at {st1.name}"]))
+                        notes=[f"Transfer at {st1.name}"] + [f"{r.name} delayed {r.delay_min} min" for r in (r1, r2) if r.delay_min]))
     return legs
 
 
@@ -165,9 +169,16 @@ def travel_options(a: Point, b: Point, constraints: Constraints, transit: Transi
         options = [leg]
     else:
         options = []
-        limit = 0.4 if "limited_walking" in constraints.accessibility else transit.max_walk_km
+        comfortable = transit.max_walk_km
+        if "limited_walking" in constraints.accessibility:
+            limit = 0.4
+        elif constraints.max_walk_km is not None:
+            limit = constraints.max_walk_km
+        else:
+            limit = max(comfortable, LONG_WALK_KM)
         walk = walk_leg(a, b, transit.model_copy(update={"max_walk_km": limit}))
         if walk:
+            walk.long_walk = walk.distance_km > comfortable
             options.append(walk)
         if mode != "walking":
             buses = bus_legs(a, b, transit) + transfer_legs(a, b, transit)

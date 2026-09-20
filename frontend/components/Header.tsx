@@ -16,11 +16,11 @@ export default function Header({
   return (
     <header className="site-header">
       <div className="header-inner">
-        <Link className="brand" href="/" aria-label="AidGraph home">
+        <Link className="brand" href="/" aria-label="Lighthouse home">
           <span className="brand-mark">
-            <Icon name="route" size={24} />
+            <Icon name="lighthouse" size={24} />
           </span>
-          Aid<span>Graph</span>
+          Light<span>house</span>
         </Link>
         <button
           className="region location-button"

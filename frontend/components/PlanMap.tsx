@@ -50,7 +50,7 @@ function makeIcon(opts: {
     `color:#fff;font:700 ${fontSize}px/1 system-ui,sans-serif;box-sizing:border-box">${label}</div>`;
   return L.divIcon({
     html,
-    className: "aidgraph-marker",
+    className: "lighthouse-marker",
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
     tooltipAnchor: [0, -size / 2],

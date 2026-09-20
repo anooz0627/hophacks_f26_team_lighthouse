@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Request, Response
+from pydantic import BaseModel, Field
 
 from .. import voice
 
@@ -37,3 +38,18 @@ async def transcribe(request: Request) -> dict[str, str]:
     if len(text) > 10000:
         raise HTTPException(422, "The transcript is too long. Try a shorter recording.")
     return {"text": text}
+
+
+class SayRequest(BaseModel):
+    text: str = Field(min_length=1, max_length=1500)
+
+
+@router.post("/speech/say")
+def say(body: SayRequest) -> Response:
+    if not voice.voice_enabled():
+        raise HTTPException(503, "Voice playback is not configured on this server.")
+    try:
+        data = voice.audio_for("say", body.text.strip())
+    except Exception as exc:
+        raise HTTPException(502, "Voice playback is temporarily unavailable.") from exc
+    return Response(content=data, media_type="audio/mpeg", headers={"cache-control": "private, max-age=600"})

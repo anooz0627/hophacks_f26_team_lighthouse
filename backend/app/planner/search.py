@@ -180,8 +180,12 @@ def search(g: nx.DiGraph, eligible: list[Resource], uc: UserConstraints, now: da
             vw = list(warnings.get(r.id, []))
             if "step_free" in uc.constraints.accessibility and leg.mode == "bus":
                 vw.append("Step-free access is seeded for this demo; confirm vehicle and stop accessibility")
+            penalty = penalties.get(r.id, 0.0)
+            if leg.mode == "walk" and leg.long_walk:
+                vw.append(f"Long walk: {leg.distance_km:.1f} km, about {leg.duration_min} min on foot. Tell us below if that is too far.")
+                penalty += 0.1
             visit = Visit(r, arrival, arrival + timedelta(minutes=DWELL_MIN[r.service]), leg, loc,
-                          _slack(r, arrival), day, vw, penalties.get(r.id, 0.0))
+                          _slack(r, arrival), day, vw, penalty)
             feasible_ids.add(r.id)
             schedule(pairs, index + 1, r.id, visit.departure, next_cost,
                      travel + leg.duration_min, visits + [visit], missing, call)

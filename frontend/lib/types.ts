@@ -67,6 +67,7 @@ export interface TransitRoute {
   fare: number;
   headway_min: number;
   avg_speed_kmh: number;
+  delay_min: number;
   stops: Stop[];
 }
 export interface TransitData {
@@ -105,6 +106,7 @@ export interface Constraints {
     | "rideshare"
     | "own_vehicle";
   transportation_needed: boolean;
+  max_walk_km?: number | null;
   location_label: string;
   custom_deadline: string | null;
   gender: Gender | null;
@@ -175,6 +177,14 @@ export interface UnroutedResource {
   reason: string;
   warnings: string[];
 }
+export interface BlockedNeed {
+  need: ServiceType;
+  cause: "id" | "budget" | "route" | "hours" | "status" | "eligibility" | "none";
+  summary: string;
+  suggestion: string;
+  first_step_resource_id: string | null;
+  checked: number;
+}
 export interface Plan {
   strategy: Strategy;
   tradeoff: string;
@@ -191,6 +201,7 @@ export interface Plan {
   unmet_needs: ServiceType[];
   explanation: string;
   rejected: RejectedResource[];
+  blocked?: BlockedNeed[];
   unrouted_resources?: UnroutedResource[];
   graph: PlanGraph;
 }
@@ -233,4 +244,15 @@ export interface PlanBundle {
   plans: Plan[];
   alternatives_note: string;
   diff: PlanDiff | null;
+}
+export interface Progress {
+  completed_orders: number[];
+  current_location?: LatLng | null;
+  now?: string | null;
+}
+export interface DisruptionResponse extends PlanBundle {
+  previous_plan_id: string;
+  actions: string[];
+  message: string;
+  source: "llm" | "rules";
 }

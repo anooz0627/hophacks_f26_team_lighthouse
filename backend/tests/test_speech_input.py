@@ -12,7 +12,7 @@ client = TestClient(app)
 @pytest.fixture(autouse=True)
 def configured_voice(monkeypatch):
     monkeypatch.setenv("ELEVENLABS_API_KEY", "test-key")
-    monkeypatch.delenv("AIDGRAPH_DISABLE_VOICE", raising=False)
+    monkeypatch.delenv("LIGHTHOUSE_DISABLE_VOICE", raising=False)
 
 
 def send(data=b"recorded-audio", content_type="audio/webm;codecs=opus"):

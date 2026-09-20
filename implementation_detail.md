@@ -1,4 +1,4 @@
-# AidGraph Implementation Plan (HopHacks MVP)
+# Lighthouse Implementation Plan (HopHacks MVP)
 
 > **Principle:** the LLM understands the situation; the planner (deterministic code) computes a plan that is actually feasible.
 > The LLM never produces the plan itself. Every plan is derived from verified data and a deterministic algorithm.
@@ -23,7 +23,7 @@ These settle the questions left open in the design document.
 ## 1. Repository Layout
 
 ```
-aid_graph/
+lighthouse/
 ├── backend/
 │   ├── app/
 │   │   ├── main.py              # FastAPI entry point, CORS, router registration
@@ -316,7 +316,7 @@ POST /replan { plan_id }
 
 ```
 ┌──────────────────────────────────────────────────────────┐
-│  AidGraph                                    [Admin ⚙]   │
+│  Lighthouse                                    [Admin ⚙]   │
 ├───────────────────────┬──────────────────────────────────┤
 │ Situation textarea    │                                  │
 │ [Example buttons ×3]  │          Map (Leaflet)           │
@@ -444,4 +444,4 @@ idle → extracting  (POST /extract; animate the extraction result)
 4. The rejected panel lists Shelter C (intake closed) and Shelter D (age).
 5. In the admin drawer, set Shelter A → FULL.
 6. Banner: "Shelter A is now full. Replanning…" → new route via Shelter B, previous route fades.
-7. Closing: "Resource directories tell people what help exists. AidGraph tells them how to actually reach it."
+7. Closing: "Resource directories tell people what help exists. Lighthouse shows them the way there."

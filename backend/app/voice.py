@@ -17,7 +17,7 @@ _cache: OrderedDict[str, bytes] = OrderedDict()
 
 
 def voice_enabled() -> bool:
-    if os.environ.get("AIDGRAPH_DISABLE_VOICE"):
+    if os.environ.get("LIGHTHOUSE_DISABLE_VOICE"):
         return False
     return bool(os.environ.get("ELEVENLABS_API_KEY"))
 
@@ -60,7 +60,10 @@ def speech_script(plan: Plan) -> str:
                 lines.append(f"{resource.name}, at {resource.address}. {' '.join(option.warnings)}")
     if plan.unmet_needs:
         names = ", ".join(n.value.replace("_", " ") for n in plan.unmet_needs)
-        lines.append(f"We could not schedule {names}. Call 2 1 1 for more options.")
+        lines.append(f"We could not schedule {names}.")
+        for item in plan.blocked:
+            lines.append(f"{item.summary} {item.suggestion}")
+        lines.append("Call 2 1 1 for more options.")
     else:
         lines.append("All times are estimates. Call ahead before you travel.")
     return " ".join(lines)[:MAX_CHARS]

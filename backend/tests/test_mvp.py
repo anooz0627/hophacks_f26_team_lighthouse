@@ -1,7 +1,7 @@
 """End-to-end contract and planner regression tests for the interactive vertical slice."""
 from datetime import datetime
 import os
-os.environ["AIDGRAPH_DISABLE_LLM"] = "1"
+os.environ["LIGHTHOUSE_DISABLE_LLM"] = "1"
 
 import pytest
 from fastapi.testclient import TestClient

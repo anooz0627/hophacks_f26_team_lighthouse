@@ -24,7 +24,7 @@ def model_chain() -> list[str]:
 
 
 def llm_enabled() -> bool:
-    if os.environ.get("AIDGRAPH_DISABLE_LLM"):
+    if os.environ.get("LIGHTHOUSE_DISABLE_LLM"):
         return False
     return bool(os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY"))
 

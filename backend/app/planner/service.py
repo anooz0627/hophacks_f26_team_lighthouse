@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 from zoneinfo import ZoneInfo
 
 from ..explain import template
-from ..models import (LatLng, Plan, PlanBundle, PlanDiff, RejectedResource, Strategy, UnroutedResource, UserConstraints)
+from ..models import (BlockedNeed, LatLng, Plan, PlanBundle, PlanDiff, Progress, RejectedResource, ServiceType, Strategy,
+                      UnroutedResource, UserConstraints)
 from ..store import store
 from .filters import apply_filters
 from .graph import build_plan_graph, build_travel_graph
@@ -15,6 +16,61 @@ from .timeline import build_timeline
 from .travel import haversine_km
 
 STRATEGIES: tuple[Strategy, ...] = ("recommended", "fastest", "lowest_cost")
+NEED_WORD = {ServiceType.emergency_housing: "shelter", ServiceType.food: "food", ServiceType.long_term_assistance: "longer-term help"}
+CAUSE_ORDER = ("status", "id", "budget", "route", "hours", "eligibility")
+BLOCKED_TEXT = {
+    "id": ("Every {word} option we checked requires a photo ID.", "Look for a place that does not require ID, or get help replacing your ID first."),
+    "budget": ("Travel or fees for every {word} option exceed your budget.", "A free route or fare help is needed. Tell us if your budget changed."),
+    "route": ("No {word} option is within your walking limit from where you are.", "Tell us if you can walk farther, or use a bus or rideshare."),
+    "hours": ("Every {word} option is closed by the time you could arrive.", "We scheduled the next opening where possible. Call 211 for after-hours options."),
+    "status": ("Every {word} option is currently full, closed or unavailable.", "Check again later or call 211."),
+    "eligibility": ("The {word} options we checked have requirements you do not meet (age, household or accessibility).", "Confirm requirements by phone; some rules have exceptions."),
+    "none": ("No listed resource offers {word}.", "Call 211 for options outside this dataset."),
+}
+
+
+def classify_reason(reason: str) -> str:
+    r = reason.lower()
+    if "photo id" in r:
+        return "id"
+    if "budget" in r:
+        return "budget"
+    if "no route" in r or "walking limit" in r:
+        return "route"
+    if "currently" in r or "service delayed" in r:
+        return "status"
+    if "close" in r or "opening" in r:
+        return "hours"
+    return "eligibility"
+
+
+def diagnose_blocked(unmet: list[ServiceType], rejected: list[RejectedResource], search_rejections: dict[str, str]) -> list[BlockedNeed]:
+    blocked: list[BlockedNeed] = []
+    for need in unmet:
+        reasons: dict[str, str] = {}
+        for rj in rejected:
+            if rj.service == need:
+                reasons[rj.resource_id] = rj.reason
+        for rid, reason in search_rejections.items():
+            r = store.get(rid)
+            if r and r.service == need and rid not in reasons:
+                reasons[rid] = reason
+        counts: dict[str, int] = {}
+        for reason in reasons.values():
+            c = classify_reason(reason)
+            counts[c] = counts.get(c, 0) + 1
+        cause = max(counts, key=lambda c: (counts[c], -CAUSE_ORDER.index(c) if c in CAUSE_ORDER else 0)) if counts else "none"
+        summary, suggestion = BLOCKED_TEXT[cause]
+        word = NEED_WORD[need]
+        first_step = None
+        if cause == "id":
+            helper = next((r for r in store.all_resources() if "id_replacement" in r.tags and r.status.value == "available"), None)
+            if helper:
+                first_step = helper.id
+                suggestion = f"First, get help replacing your ID at {helper.name}; then shelters that require ID open up."
+        blocked.append(BlockedNeed(need=need, cause=cause, summary=summary.format(word=word), suggestion=suggestion,
+                                   first_step_resource_id=first_step, checked=len(reasons)))
+    return blocked
 STRATEGY_LABEL = {"fastest": "Fastest", "lowest_cost": "Lowest cost"}
 
 
@@ -51,6 +107,7 @@ def make_plan(uc: UserConstraints, now: Optional[datetime] = None, origin: Optio
     ) for r in fr.eligible if r.service in result.unmet
         and result.rejections.get(r.id) == "no route fits your transportation or walking limits"]
     unrouted.sort(key=lambda item: (item.distance_km, item.resource_id))
+    blocked = diagnose_blocked(result.unmet, rejected, result.rejections)
 
     return Plan(
         plan_id=str(uuid.uuid4()),
@@ -68,6 +125,7 @@ def make_plan(uc: UserConstraints, now: Optional[datetime] = None, origin: Optio
         explanation=explanation,
         rejected=rejected,
         unrouted_resources=unrouted,
+        blocked=blocked,
         graph=graph,
     )
 
@@ -92,14 +150,58 @@ def _tradeoff(plan: Plan, reference: Optional[Plan]) -> str:
     return f"Saves ${saved:g}; {abs(extra)} {'more' if extra >= 0 else 'fewer'} travel minutes."
 
 
+def apply_progress(old: Plan, uc: UserConstraints, progress: Progress) -> tuple[UserConstraints, Optional[LatLng]]:
+    uc = uc.model_copy(deep=True)
+    done = [s for s in old.steps if s.order in set(progress.completed_orders)]
+    satisfied: set[ServiceType] = set()
+    origin: Optional[LatLng] = progress.current_location
+    for step in done:
+        resource = store.get(step.resource_id) if step.resource_id else None
+        if resource is None:
+            continue
+        if step.type == "visit":
+            satisfied.add(resource.service)
+            if any(n.type == "note" and n.resource_id == resource.id and "Dinner" in n.title for n in old.steps):
+                satisfied.add(ServiceType.food)
+        if origin is None and step.type in ("visit", "travel"):
+            origin = LatLng(lat=resource.lat, lng=resource.lng)
+    remaining = [n for n in uc.needs if n.type not in satisfied]
+    if remaining:
+        uc.needs = remaining
+    if origin is not None:
+        uc.constraints.current_location = origin
+    return uc, origin
+
+
+def progress_floor(old: Plan, progress: Progress) -> Optional[datetime]:
+    done = [s for s in old.steps if s.order in set(progress.completed_orders) and s.type != "note"]
+    if not done:
+        return None
+    last = max(done, key=lambda s: s.order)
+    floor = datetime.fromisoformat(last.time_iso)
+    resource = store.get(last.resource_id) if last.resource_id else None
+    if last.type == "visit" and resource is not None:
+        from .search import DWELL_MIN
+        floor += timedelta(minutes=DWELL_MIN[resource.service])
+    return floor
+
+
 def make_bundle(uc: UserConstraints, now: Optional[datetime] = None,
-                previous_plan_id: Optional[str] = None) -> PlanBundle:
+                previous_plan_id: Optional[str] = None, progress: Optional[Progress] = None) -> PlanBundle:
+    old = store.get_plan(previous_plan_id) if previous_plan_id else None
+    origin: Optional[LatLng] = None
+    if old is not None and progress is not None:
+        uc, origin = apply_progress(old, uc, progress)
+        now = progress.now or now
+        floor = progress_floor(old, progress)
+        if floor is not None:
+            now = max(local_time(now) if now else floor, floor)
     now = now or datetime.now(ZoneInfo("America/New_York"))
     plans: list[Plan] = []
     signatures: set = set()
     skipped: list[str] = []
     for strategy in STRATEGIES:
-        plan = make_plan(uc, now, strategy=strategy)
+        plan = make_plan(uc, now, origin=origin, strategy=strategy)
         signature = tuple((s.type, s.resource_id, s.mode, s.time_iso) for s in plan.steps)
         if signature in signatures:
             skipped.append(STRATEGY_LABEL.get(strategy, strategy))
@@ -115,7 +217,6 @@ def make_bundle(uc: UserConstraints, now: Optional[datetime] = None,
         note += ("Other resources fail the selected requirements, hours, route or budget checks, "
                  "or rank below this route. See checked options.")
 
-    old = store.get_plan(previous_plan_id) if previous_plan_id else None
     diff = None
     if old:
         replacement = next((p for p in plans if p.strategy == old.strategy), plans[0])
@@ -123,4 +224,8 @@ def make_bundle(uc: UserConstraints, now: Optional[datetime] = None,
                    if store.get(rid) and store.get(rid).status.value != "available"]
         trigger = "; ".join(f"{r.name} is now {r.status.value}" for r in changed) or "Availability was updated"
         diff = diff_plans(old, replacement, trigger)
+        if progress is not None:
+            finished = {s.resource_id for s in old.steps
+                        if s.type == "visit" and s.order in set(progress.completed_orders)}
+            diff.removed_resource_ids = [rid for rid in diff.removed_resource_ids if rid not in finished]
     return PlanBundle(plans=plans, alternatives_note=note, diff=diff)

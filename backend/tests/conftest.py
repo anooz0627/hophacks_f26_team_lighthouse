@@ -1,7 +1,7 @@
 import os
 
-os.environ.setdefault("AIDGRAPH_DATASET", "demo")
-os.environ.setdefault("AIDGRAPH_DISABLE_LLM", "1")
+os.environ.setdefault("LIGHTHOUSE_DATASET", "demo")
+os.environ.setdefault("LIGHTHOUSE_DISABLE_LLM", "1")
 
 import pytest
 

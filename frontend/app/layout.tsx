@@ -10,7 +10,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 export const metadata: Metadata = {
-  title: "AidGraph · Your next steps, connected",
+  title: "Lighthouse · A clear path to help",
   description:
     "Find community support in Baltimore. Review your needs, compare routes and build a practical sequence of next steps.",
 };

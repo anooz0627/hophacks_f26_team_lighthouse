@@ -6,14 +6,14 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Optional
 
-from .models import LatLng, Plan, Resource, ResourceStatus, TransitData
+from .models import LatLng, Plan, Resource, ResourceStatus, TransitData, TransitRoute
 
 DATA_DIR = Path(__file__).parent / "data"
 DATASETS = {"baltimore": "resources.json", "demo": "resources.demo.json"}
 
 
 def default_dataset() -> str:
-    return os.environ.get("AIDGRAPH_DATASET", "baltimore")
+    return os.environ.get("LIGHTHOUSE_DATASET", "baltimore")
 
 
 class Store:
@@ -54,6 +54,21 @@ class Store:
         for rid, st in self._initial_status.items():
             self.resources[rid].status = st
             self.resources[rid].capacity = self._initial_capacity[rid]
+        self.reset_delays()
+
+    def route(self, route_id: str) -> Optional[TransitRoute]:
+        return next((r for r in self.transit.routes if r.id == route_id), None)
+
+    def set_delay(self, route_id: str, minutes: int) -> TransitRoute:
+        route = self.route(route_id)
+        if route is None:
+            raise KeyError(route_id)
+        route.delay_min = minutes
+        return route
+
+    def reset_delays(self) -> None:
+        for route in self.transit.routes:
+            route.delay_min = 0
 
     def save_plan(self, plan: Plan) -> None:
         self.plans[plan.plan_id] = deepcopy(plan)

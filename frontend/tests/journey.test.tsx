@@ -16,6 +16,9 @@ vi.mock("@/components/GuideVisual", () => ({ default: () => <div /> }));
 vi.mock("@/lib/api", () => ({
   getResources: vi.fn(),
   getHealth: vi.fn(),
+  getTransit: vi.fn(),
+  reportDisruption: vi.fn(),
+  setTransitDelay: vi.fn(),
   getLocationLabel: vi.fn(),
   extract: vi.fn(),
   generatePlans: vi.fn(),
@@ -88,6 +91,7 @@ beforeEach(() => {
   };
   uc.constraints.current_location = { lat: 39.291, lng: -76.6215 };
   vi.mocked(api.getResources).mockResolvedValue([]);
+  vi.mocked(api.getTransit).mockResolvedValue([]);
   vi.mocked(api.getLocationLabel).mockResolvedValue({
     label: "21218, Baltimore",
   });

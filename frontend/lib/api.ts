@@ -3,6 +3,9 @@ import type {
   AddressMatch,
   LatLng,
   PlanBundle,
+  Progress,
+  DisruptionResponse,
+  TransitRoute,
   Health,
   Plan,
   PlanRequest,
@@ -50,7 +53,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   } catch {
     throw new ApiError(
       0,
-      `Could not reach the AidGraph API at ${API_BASE}. Is the backend running?`,
+      `Could not reach the Lighthouse API at ${API_BASE}. Is the backend running?`,
     );
   }
   if (!res.ok) {
@@ -128,8 +131,38 @@ export function generatePlans(
   constraints: UserConstraints,
   now?: string,
   previous_plan_id?: string,
+  progress?: Progress,
 ): Promise<PlanBundle> {
-  return post("/plans", { constraints, now, previous_plan_id });
+  return post("/plans", { constraints, now, previous_plan_id, progress });
+}
+export function reportDisruption(
+  plan_id: string,
+  text: string,
+  progress?: Progress,
+): Promise<DisruptionResponse> {
+  return post("/agent/disruption", { plan_id, text, progress });
+}
+export async function speakText(text: string): Promise<string> {
+  const res = await fetch(`${API_BASE}/speech/say`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ text }),
+    signal: AbortSignal.timeout(45000),
+  });
+  if (!res.ok) throw new ApiError(res.status, "Audio is unavailable.");
+  return URL.createObjectURL(await res.blob());
+}
+export function getTransit(): Promise<TransitRoute[]> {
+  return request<TransitRoute[]>("/transit");
+}
+export function setTransitDelay(
+  routeId: string,
+  delay_min: number,
+): Promise<TransitRoute> {
+  return request<TransitRoute>(
+    `/transit/${encodeURIComponent(routeId)}/delay`,
+    { method: "PATCH", body: JSON.stringify({ delay_min }) },
+  );
 }
 
 export async function transcribeAudio(

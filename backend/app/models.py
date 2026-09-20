@@ -79,6 +79,7 @@ class TransitRoute(BaseModel):
     fare: float
     headway_min: int
     avg_speed_kmh: float = 22.0
+    delay_min: int = 0
     stops: list[Stop]
 
 
@@ -111,6 +112,7 @@ class Constraints(BaseModel):
     accessibility: list[Literal["step_free", "limited_walking", "hearing_support"]] = Field(default_factory=list)
     transport: Literal["no_vehicle", "public_transit", "walking", "rideshare", "own_vehicle"] = "no_vehicle"
     transportation_needed: bool = False
+    max_walk_km: Optional[float] = Field(default=None, ge=0.2, le=15)
     location_label: str = "Current location"
     custom_deadline: Optional[datetime] = None
     gender: Optional[Literal["male", "female", "non_binary", "self_describe", "prefer_not_to_say"]] = None
@@ -185,6 +187,15 @@ class UnroutedResource(BaseModel):
     warnings: list[str] = Field(default_factory=list)
 
 
+class BlockedNeed(BaseModel):
+    need: ServiceType
+    cause: Literal["id", "budget", "route", "hours", "status", "eligibility", "none"]
+    summary: str
+    suggestion: str
+    first_step_resource_id: Optional[str] = None
+    checked: int = 0
+
+
 class Plan(BaseModel):
     plan_id: str
     strategy: Strategy = "recommended"
@@ -202,6 +213,7 @@ class Plan(BaseModel):
     explanation: str = ""
     rejected: list[RejectedResource] = Field(default_factory=list)
     unrouted_resources: list[UnroutedResource] = Field(default_factory=list)
+    blocked: list[BlockedNeed] = Field(default_factory=list)
     graph: PlanGraph
 
 
@@ -238,16 +250,40 @@ class ReplanResponse(BaseModel):
     diff: PlanDiff
 
 
+class Progress(BaseModel):
+    completed_orders: list[int] = Field(default_factory=list)
+    current_location: Optional[LatLng] = None
+    now: Optional[datetime] = None
+
+
 class PlanBundleRequest(BaseModel):
     constraints: UserConstraints
     now: Optional[datetime] = None
     previous_plan_id: Optional[str] = None
+    progress: Optional[Progress] = None
 
 
 class PlanBundle(BaseModel):
     plans: list[Plan]
     alternatives_note: str = ""
     diff: Optional[PlanDiff] = None
+
+
+class DisruptionRequest(BaseModel):
+    plan_id: str
+    text: SituationText
+    progress: Optional[Progress] = None
+
+
+class DisruptionResponse(PlanBundle):
+    previous_plan_id: str
+    actions: list[str] = Field(default_factory=list)
+    message: str = ""
+    source: Literal["llm", "rules"] = "rules"
+
+
+class TransitDelayUpdate(BaseModel):
+    delay_min: int = Field(ge=0, le=180)
 
 
 class StatusUpdate(BaseModel):

@@ -3,11 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .llm_client import llm_enabled
 from .models import Health
-from .routers import location, plan, resources, speech
+from .routers import agent, location, plan, resources, speech
 from .store import store
 from .voice import voice_enabled
 
-app = FastAPI(title="AidGraph API", version="0.1.0")
+app = FastAPI(title="Lighthouse API", version="0.1.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
@@ -19,6 +19,7 @@ app.include_router(plan.router)
 app.include_router(resources.router)
 app.include_router(speech.router)
 app.include_router(location.router)
+app.include_router(agent.router)
 
 
 @app.get("/health", response_model=Health)

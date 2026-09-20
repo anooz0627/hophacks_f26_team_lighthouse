@@ -7,6 +7,10 @@ import ConstraintFields from "@/components/ConstraintFields";
 import ConstraintsPanel from "@/components/ConstraintsPanel";
 import Header from "@/components/Header";
 import ListenButton from "@/components/ListenButton";
+import DisruptionInput from "@/components/DisruptionInput";
+import NowCard from "@/components/NowCard";
+import BlockedNeeds from "@/components/BlockedNeeds";
+import HelpCard from "@/components/HelpCard";
 import LocationEditor from "@/components/LocationEditor";
 import Icon from "@/components/Icon";
 import Modal from "@/components/Modal";
@@ -23,6 +27,9 @@ import {
   generatePlans,
   getHealth,
   getResources,
+  getTransit,
+  reportDisruption,
+  setTransitDelay,
   setResourceStatus,
   resetResources,
   errorMessage,
@@ -38,6 +45,8 @@ import type {
   Plan,
   PlanBundle,
   PlanStep,
+  Progress,
+  TransitRoute,
   Resource,
   ResourceStatus,
   UserConstraints,
@@ -61,6 +70,12 @@ export default function Home() {
   const [selected, setSelected] = useState("");
   const [resources, setResources] = useState<Resource[]>([]);
   const [health, setHealth] = useState<Health | null>(null);
+  const [transit, setTransit] = useState<TransitRoute[]>([]);
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [disruption, setDisruption] = useState<{
+    message: string;
+    actions: string[];
+  } | null>(null);
   const [resourceError, setResourceError] = useState<string | null>(null);
   const [detailId, setDetailId] = useState<string | null>(null);
   const [edit, setEdit] = useState<UserConstraints | null>(null);
@@ -107,6 +122,11 @@ export default function Home() {
     getHealth()
       .then((h) => {
         if (!cancelled) setHealth(h);
+      })
+      .catch(() => {});
+    getTransit()
+      .then((routes) => {
+        if (!cancelled) setTransit(routes);
       })
       .catch(() => {});
     return () => {
@@ -205,6 +225,91 @@ export default function Home() {
       operation.current = false;
     }
   };
+  const actionable = plan?.steps.filter((s) => s.type !== "note") ?? [];
+  const nextStep = actionable.find((s) => !completed.has(stepKey(s))) ?? null;
+  const nextResource = resources.find((r) => r.id === nextStep?.resource_id);
+  const doneCount = actionable.filter((s) => completed.has(stepKey(s))).length;
+  const focusDisruption = () => {
+    const el = document.getElementById("disruption");
+    el?.scrollIntoView({ block: "center", behavior: "smooth" });
+    el?.focus({ preventScroll: true });
+  };
+  const longWalk =
+    plan?.steps.find((s) => s.warnings.some((w) => w.startsWith("Long walk"))) ??
+    null;
+  const progressFor = (current: Plan): Progress => ({
+    completed_orders: current.steps
+      .filter((s) => completed.has(stepKey(s)))
+      .map((s) => s.order),
+    current_location: null,
+    now: null,
+  });
+  const handleDisruption = async (message: string) => {
+    const current = plan;
+    if (!current || operation.current || voiceBusy) return;
+    operation.current = true;
+    setError(null);
+    setPhase("replanning");
+    setAssistant("replanning");
+    setGuideMessage(undefined);
+    try {
+      const [next, list, routes] = await Promise.all([
+        reportDisruption(current.plan_id, message, progressFor(current)),
+        getResources(),
+        getTransit(),
+      ]);
+      setResources(list);
+      setTransit(routes);
+      acceptBundle(next, current);
+      setDisruption({ message: next.message, actions: next.actions });
+      setGuideMessage(next.message);
+    } catch (err) {
+      setError(errorMessage(err));
+      setPhase("planned");
+      setAssistant("warning");
+    } finally {
+      operation.current = false;
+    }
+  };
+  const updateDelay = async (routeId: string, minutes: number) => {
+    if (operation.current || voiceBusy) return;
+    operation.current = true;
+    setAdminBusyId(routeId);
+    setResourceError(null);
+    const current = plan;
+    if (current) {
+      setPhase("replanning");
+      setAssistant("replanning");
+      setGuideMessage(undefined);
+    }
+    try {
+      const updated = await setTransitDelay(routeId, minutes);
+      setTransit((list) => list.map((r) => (r.id === routeId ? updated : r)));
+      if (current) {
+        const next = await generatePlans(
+          current.constraints,
+          undefined,
+          current.plan_id,
+          progressFor(current),
+        );
+        if (next.diff)
+          next.diff.trigger =
+            minutes > 0
+              ? `${updated.name} is delayed ${minutes} min`
+              : `${updated.name} is back on time`;
+        acceptBundle(next, current);
+      }
+    } catch (err) {
+      setResourceError(errorMessage(err));
+      if (current) {
+        setPhase("planned");
+        setAssistant("warning");
+      }
+    } finally {
+      setAdminBusyId(null);
+      operation.current = false;
+    }
+  };
   const acceptBundle = (next: PlanBundle, previous?: Plan) => {
     const active =
       next.plans.find((p) => p.strategy === previous?.strategy) ??
@@ -221,7 +326,14 @@ export default function Home() {
         : new Set(),
     );
     setAssistant(active.feasible ? "ready" : "no-plan");
-    setGuideMessage(undefined);
+    const walkWarning = active.steps
+      .flatMap((s) => s.warnings)
+      .find((w) => w.startsWith("Long walk"));
+    setGuideMessage(
+      walkWarning
+        ? `${walkWarning.replace(" Tell us below if that is too far.", "")} Is that OK? If not, tell me below and I will look for shorter options.`
+        : undefined,
+    );
   };
   const build = async (uc: UserConstraints, previous?: Plan) => {
     if (operation.current || voiceBusy) return;
@@ -284,12 +396,16 @@ export default function Home() {
       if (id && status) {
         const updated = await setResourceStatus(id, status);
         setResources((list) => list.map((r) => (r.id === id ? updated : r)));
-      } else setResources(await resetResources());
+      } else {
+        setResources(await resetResources());
+        setTransit(await getTransit());
+      }
       if (current) {
         const next = await generatePlans(
           current.constraints,
           undefined,
           current.plan_id,
+          progressFor(current),
         );
         acceptBundle(next, current);
         if (changesActive) setAdminOpen(false);
@@ -517,7 +633,13 @@ export default function Home() {
                 guideMessage ??
                 (stage === 2 && plan?.unrouted_resources?.length
                   ? "There are places you can contact. Check travel, opening hours and availability before going."
-                  : undefined)
+                  : stage === 2 && plan && !busy && !invalidated
+                    ? nextStep
+                      ? `Right now, just this: ${nextStep.title}. Mark it done when it’s finished, or tell me below if something changed.`
+                      : actionable.length
+                        ? "Every step is done. Keep the help card handy if you need to explain your situation again."
+                        : undefined
+                    : undefined)
               }
               reviewing={phase === "review" && !error}
             />
@@ -566,7 +688,7 @@ export default function Home() {
                 <p>
                   Tell us a little about your situation.
                   <br />
-                  We’ll connect the resources into a plan you can follow.
+                  We’ll turn them into a plan you can follow, one step at a time.
                 </p>
                 <div className="empty-checks">
                   <span>
@@ -671,6 +793,21 @@ export default function Home() {
                   </div>
                 ) : (
                   <>
+                    <NowCard
+                      step={nextStep}
+                      resource={nextResource}
+                      done={doneCount}
+                      total={actionable.length}
+                      onDone={() => nextStep && completeStep(nextStep)}
+                      onStuck={focusDisruption}
+                      onShowCard={() => setHelpOpen(true)}
+                    />
+                    <BlockedNeeds
+                      blocked={plan.blocked ?? []}
+                      resources={resources}
+                      onDetails={(r) => setDetailId(r.id)}
+                      onStuck={focusDisruption}
+                    />
                     <PlanComparison
                       plans={bundle!.plans}
                       selected={selected}
@@ -783,6 +920,12 @@ export default function Home() {
                       </>
                     )}
                     <RejectedPanel rejected={plan.rejected} />
+                    <DisruptionInput
+                      onSubmit={(t) => void handleDisruption(t)}
+                      busy={busy}
+                      lastMessage={disruption?.message}
+                      suggestions={longWalk ? ["That's too far to walk"] : []}
+                    />
                   </>
                 )}
               </>
@@ -790,8 +933,8 @@ export default function Home() {
           </div>
         </div>
         <footer className="site-footer">
-          <span className="brand-mini">AidGraph</span>
-          <span>Community resources. A plan that connects them.</span>
+          <span className="brand-mini">Lighthouse</span>
+          <span>Community resources. A light to guide you there.</span>
           <span>Baltimore · Hackathon prototype</span>
         </footer>
       </main>
@@ -960,6 +1103,16 @@ export default function Home() {
           )?.mode
         }
       />
+      {plan && (
+        <HelpCard
+          open={helpOpen}
+          onClose={() => setHelpOpen(false)}
+          plan={plan}
+          step={nextStep}
+          resource={nextResource}
+          voice={health?.voice ?? false}
+        />
+      )}
       <AdminDrawer
         open={adminOpen}
         onClose={() => setAdminOpen(false)}
@@ -970,6 +1123,8 @@ export default function Home() {
         activeIds={plan?.resource_ids ?? []}
         onChangeStatus={(id, status) => void updateAvailability(id, status)}
         onReset={() => void updateAvailability()}
+        transit={transit}
+        onChangeDelay={(id, minutes) => void updateDelay(id, minutes)}
       />
     </div>
   );

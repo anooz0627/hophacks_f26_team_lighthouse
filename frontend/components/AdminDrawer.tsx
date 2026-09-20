@@ -1,4 +1,4 @@
-import type { Resource, ResourceStatus } from "@/lib/types";
+import type { Resource, ResourceStatus, TransitRoute } from "@/lib/types";
 import { STATUS_LABEL, STATUS_OPTIONS, SERVICE_LABEL } from "@/lib/format";
 import Icon from "./Icon";
 import Modal from "./Modal";
@@ -12,6 +12,8 @@ export default function AdminDrawer({
   onChangeStatus,
   onReset,
   activeIds,
+  transit = [],
+  onChangeDelay,
 }: {
   open: boolean;
   onClose: () => void;
@@ -22,6 +24,8 @@ export default function AdminDrawer({
   onChangeStatus: (id: string, status: ResourceStatus) => void;
   onReset: () => void;
   activeIds: string[];
+  transit?: TransitRoute[];
+  onChangeDelay?: (routeId: string, minutes: number) => void;
 }) {
   const shelter = resources.find(
     (r) => activeIds.includes(r.id) && r.service === "emergency_housing",
@@ -60,6 +64,38 @@ export default function AdminDrawer({
           Reset demo availability
         </button>
       </div>
+      {transit.length > 0 && onChangeDelay && (
+        <div className="status-list delay-list">
+          <div className="status-row heading-row">
+            <div>
+              <strong>Bus delays</strong>
+              <small>Simulated MTA delays. Added to waiting time on that route.</small>
+            </div>
+          </div>
+          {transit.map((route) => (
+            <div className="status-row" key={route.id}>
+              <div>
+                <strong>{route.name}</strong>
+                <small>Every {route.headway_min} min · ${route.fare.toFixed(2)}</small>
+              </div>
+              <label>
+                <span className="sr-only">Delay for {route.name}</span>
+                <select
+                  value={route.delay_min}
+                  disabled={locked}
+                  onChange={(e) => onChangeDelay(route.id, Number(e.target.value))}
+                >
+                  {[0, 5, 10, 15, 20, 30, 45].map((m) => (
+                    <option key={m} value={m}>
+                      {m === 0 ? "On time" : `+${m} min`}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          ))}
+        </div>
+      )}
       <div className="status-list">
         {resources.map((r) => (
           <div

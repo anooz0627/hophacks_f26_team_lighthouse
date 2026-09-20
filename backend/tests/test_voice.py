@@ -1,6 +1,6 @@
 import os
 
-os.environ["AIDGRAPH_DISABLE_LLM"] = "1"
+os.environ["LIGHTHOUSE_DISABLE_LLM"] = "1"
 
 from datetime import datetime
 
@@ -75,3 +75,14 @@ def test_audio_failure_is_a_502(monkeypatch):
     monkeypatch.setattr(voice, "synthesize", boom)
     voice._cache.clear()
     assert client.get(f"/plans/{plan['plan_id']}/audio").status_code == 502
+
+
+def test_say_endpoint_reads_arbitrary_text(monkeypatch):
+    monkeypatch.delenv("ELEVENLABS_API_KEY", raising=False)
+    assert client.post("/speech/say", json={"text": "I need shelter tonight."}).status_code == 503
+    monkeypatch.setenv("ELEVENLABS_API_KEY", "test")
+    monkeypatch.setattr(voice, "synthesize", lambda text: b"ID3card")
+    voice._cache.clear()
+    r = client.post("/speech/say", json={"text": "I need shelter tonight."})
+    assert r.status_code == 200 and r.headers["content-type"] == "audio/mpeg" and r.content == b"ID3card"
+    assert client.post("/speech/say", json={"text": ""}).status_code == 422

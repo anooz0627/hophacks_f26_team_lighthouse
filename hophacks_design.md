@@ -1,4 +1,4 @@
-# AidGraph
+# Lighthouse
 
 **An actionable resource planner for people seeking community support.**
 
@@ -8,9 +8,9 @@ HopHacks 2026 — Design Document
 
 ## 1. One-Line Pitch
 
-AidGraph turns a person's situation into a verified, step-by-step plan for reaching the community resources they need.
+Lighthouse turns a person's situation into a verified, step-by-step plan for reaching the community resources they need.
 
-Rather than returning a list of shelters, food banks, transportation services, or assistance programs, AidGraph connects those resources together and computes an actionable path based on the person's real constraints.
+Rather than returning a list of shelters, food banks, transportation services, or assistance programs, Lighthouse lines those resources up into an actionable path based on the person's real constraints.
 
 ## 2. Problem
 
@@ -34,7 +34,7 @@ The core problem is not finding resources. It is figuring out how to use them to
 
 ## 3. Solution
 
-AidGraph models local community resources as a structured graph. Each resource records:
+Lighthouse models local community resources as a structured graph. Each resource records:
 
 - Service provided
 - Location
@@ -45,7 +45,7 @@ AidGraph models local community resources as a structured graph. Each resource r
 - Transportation constraints
 - Availability or capacity, where known
 
-The person describes their situation in plain language. AidGraph then:
+The person describes their situation in plain language. Lighthouse then:
 
 1. Identifies the person's needs and constraints.
 2. Finds relevant, verified resources.
@@ -54,7 +54,7 @@ The person describes their situation in plain language. AidGraph then:
 5. Produces a step-by-step plan.
 6. Replans automatically if a resource becomes unavailable.
 
-Instead of "Here are 15 shelters near you," AidGraph produces:
+Instead of "Here are 15 shelters near you," Lighthouse produces:
 
 ```
 6:10 PM   Call Shelter A
@@ -113,7 +113,7 @@ Identified constraints:
 
 **Step 3 — Planning**
 
-AidGraph selects a feasible path by evaluating eligibility, hours, distance, transportation, dependencies, availability, and the person's constraints.
+Lighthouse selects a feasible path by evaluating eligibility, hours, distance, transportation, dependencies, availability, and the person's constraints.
 
 **Step 4 — Action plan**
 
@@ -127,7 +127,7 @@ Suppose Shelter A becomes unavailable:
 Shelter A   AVAILABLE → FULL
 ```
 
-AidGraph invalidates the affected path and searches the graph again.
+Lighthouse invalidates the affected path and searches the graph again.
 
 ```
 Old plan:  Shelter A → Bus Route X → Pantry C
@@ -192,7 +192,7 @@ The final plan is visualized geographically. The map shows the person's location
 
 ### F. Live replanning
 
-A resource can be marked **Full**, **Closed**, **Unavailable**, or **Delayed**. AidGraph automatically computes an alternative plan. This is what makes the product feel like a planner rather than a static search engine.
+A resource can be marked **Full**, **Closed**, **Unavailable**, or **Delayed**. Lighthouse automatically computes an alternative plan. This is what makes the product feel like a planner rather than a static search engine.
 
 ## 6. System Architecture
 
@@ -281,7 +281,7 @@ The project is intentionally kept small.
 Attempt these only after the core demo works.
 
 - **Multilingual support.** A person asks for help in Spanish, Korean, or another language while the underlying resource data stays structured.
-- **Document assistance.** When a service requires, for example, proof of income and a photo ID, AidGraph explains exactly which documents to prepare.
+- **Document assistance.** When a service requires, for example, proof of income and a photo ID, Lighthouse explains exactly which documents to prepare.
 - **Accessibility.** Voice input and output for people who have difficulty navigating complex websites.
 - **Organization dashboard.** Nonprofits update capacity, status, and food availability, and the change immediately affects future plans.
 - **Multiple people and families.** Account for family size, children, accessibility needs, and pets.
@@ -298,7 +298,7 @@ Attempt these only after the core demo works.
 
 **Sequence**
 
-1. AidGraph extracts the situation.
+1. Lighthouse extracts the situation.
 
    ```
    Housing          HIGH PRIORITY
@@ -310,7 +310,7 @@ Attempt these only after the core demo works.
 
 2. The resource graph appears, showing relevant resources and their dependencies.
 
-3. AidGraph generates an actionable plan.
+3. Lighthouse generates an actionable plan.
 
    ```
    6:15 PM    Take Bus X
@@ -323,15 +323,15 @@ Attempt these only after the core demo works.
 
 5. The demo moment: change Shelter A from **Available** to **Full**.
 
-6. AidGraph replans. The previous route disappears and a new feasible plan is generated.
+6. Lighthouse replans. The previous route disappears and a new feasible plan is generated.
 
 **Closing line**
 
-> "Resource directories tell people what help exists. AidGraph tells them how to actually reach it."
+> "Resource directories tell people what help exists. Lighthouse shows them the way there."
 
 ## 11. Why This Is Different
 
-AidGraph is not another resource-search chatbot. A chatbot can retrieve "here are five nearby shelters." AidGraph asks a different question:
+Lighthouse is not another resource-search chatbot. A chatbot can retrieve "here are five nearby shelters." Lighthouse asks a different question:
 
 > Given this person's constraints, what sequence of resources can actually solve their problem?
 
@@ -341,19 +341,19 @@ The technical differentiation comes from combining natural-language understandin
 
 **Data accuracy.** We do not claim information is real-time unless we have a real-time source. For the hackathon, availability changes are clearly presented as simulated nonprofit-side updates.
 
-**High-stakes decisions.** AidGraph does not independently determine whether someone legally qualifies for a benefit, nor does it guarantee that a service will accept them. It presents source information, known requirements, contact details, and recommended next steps.
+**High-stakes decisions.** Lighthouse does not independently determine whether someone legally qualifies for a benefit, nor does it guarantee that a service will accept them. It presents source information, known requirements, contact details, and recommended next steps.
 
 **Scope creep.** We are not building a national platform during the hackathon. A polished Baltimore demo with 20–30 resources is far better than an incomplete system covering hundreds of organizations.
 
 ## 13. Goals for HopHacks
 
-The strongest version of AidGraph demonstrates three things:
+The strongest version of Lighthouse demonstrates three things:
 
 - **Impact.** Someone facing a complicated situation receives a clear path to assistance.
 - **Technical depth.** The system reasons over constraints and dependencies instead of simply generating text.
 - **Demo quality.** A judge can immediately see the plan, the map, and live replanning happen.
 
-**Core concept:** search finds resources. AidGraph connects them into a plan.
+**Core concept:** search finds resources. Lighthouse guides people to them.
 
 ---
 
@@ -429,4 +429,4 @@ The LLM never decides the answer directly.
 - LLM = understands the person's situation
 - Planner = computes what is actually possible
 
-AidGraph's purpose is not simply to find resources, but to turn a person's situation into a concrete, executable next action.
+Lighthouse's purpose is not simply to find resources, but to turn a person's situation into a concrete, executable next action.
