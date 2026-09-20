@@ -86,7 +86,7 @@ export const MODE_STYLE: Record<
   rideshare: { color: "#6d4cc4", weight: 5 },
 };
 export function demoNowIso(): string {
-  return "2026-09-17T18:00:00";
+  return "2026-09-20T18:00:00";
 }
 
 export function timelineDayLabel(date: string, now: string): string {

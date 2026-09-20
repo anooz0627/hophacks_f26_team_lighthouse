@@ -300,13 +300,13 @@ export default function Home() {
           <div className="demo-clock">
             <Icon name="clock" size={18} />
             <div>
-              Thursday, September 17
+              Sunday, September 20
               <small>Demo starts at 6:00 PM · Baltimore time</small>
             </div>
           </div>
         </div>
         <p className="mobile-demo-note">
-          Demo: September 17, 2026 · 6:00 PM Baltimore time
+          Demo: September 20, 2026 · 6:00 PM Baltimore time
         </p>
         <ol className="journey" aria-label="Planning progress">
           {["Your situation", "Review your details", "Your action plan"].map(

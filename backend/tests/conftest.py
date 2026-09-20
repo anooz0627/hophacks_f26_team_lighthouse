@@ -1,3 +1,8 @@
+import os
+
+os.environ.setdefault("AIDGRAPH_DATASET", "demo")
+os.environ.setdefault("AIDGRAPH_DISABLE_LLM", "1")
+
 import pytest
 
 from app.store import store
@@ -5,8 +10,8 @@ from app.store import store
 
 @pytest.fixture(autouse=True)
 def reset_store():
-    store.load()
+    store.load("demo")
     store.plans.clear()
     yield
-    store.load()
+    store.load("demo")
     store.plans.clear()

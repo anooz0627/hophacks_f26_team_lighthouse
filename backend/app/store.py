@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from copy import deepcopy
 from pathlib import Path
 from typing import Optional
@@ -8,6 +9,11 @@ from typing import Optional
 from .models import LatLng, Plan, Resource, ResourceStatus, TransitData
 
 DATA_DIR = Path(__file__).parent / "data"
+DATASETS = {"baltimore": "resources.json", "demo": "resources.demo.json"}
+
+
+def default_dataset() -> str:
+    return os.environ.get("AIDGRAPH_DATASET", "baltimore")
 
 
 class Store:
@@ -19,8 +25,10 @@ class Store:
         self._initial_status: dict[str, ResourceStatus] = {}
         self.load()
 
-    def load(self) -> None:
-        raw = json.loads((DATA_DIR / "resources.json").read_text())
+    def load(self, dataset: Optional[str] = None) -> None:
+        self.dataset = dataset or default_dataset()
+        raw = json.loads((DATA_DIR / DATASETS[self.dataset]).read_text())
+        self.meta = raw.get("meta", {})
         origin = raw.get("meta", {}).get("default_origin")
         if origin:
             self.default_origin = LatLng(lat=origin["lat"], lng=origin["lng"])

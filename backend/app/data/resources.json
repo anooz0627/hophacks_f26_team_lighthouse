@@ -1,23 +1,24 @@
 {
   "meta": {
     "region": "Baltimore, MD",
-    "note": "DEMO DATASET. Names, hours and eligibility are illustrative and must be replaced with verified entries (source_url + last_verified) before real use. Contacts use fictional 555 numbers. Websites are intentionally absent. Accessibility, children and pet policies are seeded demo assumptions, not verified facts.",
+    "dataset": "baltimore",
+    "note": "Real Baltimore organizations. Hours, intake rules and eligibility were copied from each organization's own website or the 211 Maryland / CHARMcare directories on the last_verified date. Directories sometimes disagree; conflicts are recorded in notes. Always call ahead. Bus routes in transit.json are approximations of MTA CityLink lines, not a live schedule. Availability changes made in the app are simulated.",
     "default_origin": {
-      "lat": 39.291,
-      "lng": -76.6215,
+      "lat": 39.2917,
+      "lng": -76.6207,
       "label": "Lexington Market"
     }
   },
   "resources": [
     {
-      "id": "shelter_harbor_light",
-      "name": "Harbor Light Emergency Shelter",
+      "id": "whrc",
+      "name": "Weinberg Housing & Resource Center",
       "service": "emergency_housing",
-      "description": "Overnight emergency shelter for adults. Mats and cots, hot breakfast.",
-      "address": "1800 E Monument St, Baltimore, MD 21205",
-      "lat": 39.299,
-      "lng": -76.5905,
-      "phone": "410-555-0101",
+      "description": "Baltimore's largest low-barrier emergency shelter for adult men and women, run by Catholic Charities. Open 24/7 with meals, showers, laundry and case management.",
+      "address": "620 Fallsway, Baltimore, MD 21202",
+      "lat": 39.29734,
+      "lng": -76.61063,
+      "phone": "443-984-9540",
       "hours": [
         {
           "days": [
@@ -29,87 +30,42 @@
             "sat",
             "sun"
           ],
-          "open": "18:00",
-          "close": "08:00"
+          "open": "00:00",
+          "close": "23:59"
         }
       ],
-      "intake_deadline": "20:00",
-      "eligibility": {
-        "min_age": 18,
-        "requires_id": true,
-        "families_ok": false,
-        "required_documents": [
-          "Photo ID"
-        ],
-        "children_ok": false,
-        "pets_ok": false,
-        "accessibility": [
-          "step_free"
-        ]
-      },
-      "cost": 0,
-      "capacity": 4,
-      "status": "available",
-      "source_url": null,
-      "last_verified": null,
-      "notes": "Photo ID required at intake. Beds first-come, call ahead.",
-      "simulated": true,
-      "website_url": null
-    },
-    {
-      "id": "shelter_eastside",
-      "name": "Eastside Community Shelter",
-      "service": "emergency_housing",
-      "description": "Low-barrier overnight shelter. No ID required.",
-      "address": "2400 E Biddle St, Baltimore, MD 21213",
-      "lat": 39.309,
-      "lng": -76.586,
-      "phone": "410-555-0102",
-      "hours": [
-        {
-          "days": [
-            "mon",
-            "tue",
-            "wed",
-            "thu",
-            "fri",
-            "sat",
-            "sun"
-          ],
-          "open": "18:30",
-          "close": "07:30"
-        }
-      ],
-      "intake_deadline": "21:30",
+      "intake_deadline": "21:00",
       "eligibility": {
         "min_age": 18,
         "requires_id": false,
         "families_ok": false,
         "children_ok": false,
-        "pets_ok": true,
-        "accessibility": [
-          "step_free",
-          "hearing_support"
-        ]
+        "pets_ok": false,
+        "accessibility": [],
+        "required_documents": []
       },
       "cost": 0,
-      "capacity": 12,
+      "capacity": null,
       "status": "available",
-      "source_url": null,
-      "last_verified": null,
-      "notes": "Low-barrier. Walk-ins accepted until 9:30 PM.",
-      "simulated": true,
-      "website_url": null
+      "website_url": "https://cc-md.org/programs/weinberg-housing-resource-center/",
+      "source_url": "https://cc-md.org/programs/weinberg-housing-resource-center/",
+      "simulated": false,
+      "last_verified": "2026-09-18",
+      "notes": "No walk-ins. Call the Mayor's Office of Homeless Services Coordinated Entry line (443-984-9540) for a referral between 9:30 AM and 9:00 PM; some directories list weekday 8:30 AM–4:30 PM, so call early. Shelter front desk: 667-600-3230. Breakfast and dinner served to residents.",
+      "tags": [
+        "meals_included",
+        "referral_required"
+      ]
     },
     {
-      "id": "shelter_lombard",
-      "name": "Lombard Street Night Shelter",
+      "id": "baltimore_rescue_mission",
+      "name": "Baltimore Rescue Mission (Men's Division)",
       "service": "emergency_housing",
-      "description": "Adult overnight shelter with early intake.",
-      "address": "1100 W Lombard St, Baltimore, MD 21223",
-      "lat": 39.2865,
-      "lng": -76.633,
-      "phone": "410-555-0103",
+      "description": "Emergency overnight shelter for men 18 and up. Bed, meals, clothing and showers; evening chapel service.",
+      "address": "4 N Central Ave, Baltimore, MD 21202",
+      "lat": 39.2918,
+      "lng": -76.59991,
+      "phone": "410-342-2533",
       "hours": [
         {
           "days": [
@@ -121,39 +77,42 @@
             "sat",
             "sun"
           ],
-          "open": "16:00",
+          "open": "14:00",
           "close": "07:00"
         }
       ],
-      "intake_deadline": "17:00",
+      "intake_deadline": "19:45",
       "eligibility": {
         "min_age": 18,
         "requires_id": false,
+        "gender": "male",
         "families_ok": false,
         "children_ok": false,
         "pets_ok": false,
-        "accessibility": [
-          "step_free"
-        ]
+        "accessibility": [],
+        "required_documents": []
       },
       "cost": 0,
-      "capacity": 20,
+      "capacity": null,
       "status": "available",
-      "source_url": null,
-      "last_verified": null,
-      "notes": "Intake closes at 5 PM sharp.",
-      "simulated": true,
-      "website_url": null
+      "website_url": "https://baltimorerescuemission.org/ministries/mens-division",
+      "source_url": "https://www.charmcare.org/locations/baltimore-rescue-mission-the/baltimore-rescue-mission-the",
+      "simulated": false,
+      "last_verified": "2026-09-18",
+      "notes": "Walk-in intake 2:00–7:45 PM daily, first come first served; guests leave by 7:00 AM (CHARMcare). 211 Maryland lists 24-hour intake and no ID; some directories ask for a picture ID, so bring one if you have it. Dinner and breakfast provided.",
+      "tags": [
+        "meals_included"
+      ]
     },
     {
-      "id": "shelter_northern",
-      "name": "Northern Adult Shelter",
+      "id": "helping_up_mission",
+      "name": "Helping Up Mission (Overnight Guest Services)",
       "service": "emergency_housing",
-      "description": "Overnight shelter for adults 21 and older.",
-      "address": "3300 Greenmount Ave, Baltimore, MD 21218",
-      "lat": 39.328,
-      "lng": -76.608,
-      "phone": "410-555-0104",
+      "description": "Overnight guest program for men: a bed, two hot meals, shower, clean clothes and an evening chapel message.",
+      "address": "1029 E Baltimore St, Baltimore, MD 21202",
+      "lat": 39.2904,
+      "lng": -76.60206,
+      "phone": "410-675-7500",
       "hours": [
         {
           "days": [
@@ -165,42 +124,42 @@
             "sat",
             "sun"
           ],
-          "open": "18:00",
-          "close": "08:00"
+          "open": "14:30",
+          "close": "07:00"
         }
       ],
-      "intake_deadline": "21:00",
+      "intake_deadline": "17:30",
       "eligibility": {
         "min_age": 21,
-        "requires_id": true,
+        "requires_id": false,
+        "gender": "male",
         "families_ok": false,
-        "required_documents": [
-          "Photo ID"
-        ],
         "children_ok": false,
         "pets_ok": false,
-        "accessibility": [
-          "step_free"
-        ]
+        "accessibility": [],
+        "required_documents": []
       },
       "cost": 0,
-      "capacity": 30,
+      "capacity": 50,
       "status": "available",
-      "source_url": null,
-      "last_verified": null,
-      "notes": "",
-      "simulated": true,
-      "website_url": null
+      "website_url": "https://helpingupmission.org/programs-services/get-help-men",
+      "source_url": "https://search.211md.org/search/cfebd6af-4467-51fe-9302-beffd3f330fe",
+      "simulated": false,
+      "last_verified": "2026-09-18",
+      "notes": "Intake daily at 2:30 PM; walk-ins accepted until 5:30 PM, first come first served, about 50 beds (211 Maryland). The mission's own site lists age 21+; 211 lists 18+. After-hours line 410-929-6999.",
+      "tags": [
+        "meals_included"
+      ]
     },
     {
-      "id": "shelter_grace_women",
-      "name": "Grace House for Women & Children",
+      "id": "sarahs_hope",
+      "name": "Sarah's Hope Family Shelter (Mount Street)",
       "service": "emergency_housing",
-      "description": "Emergency shelter for women and women with children.",
-      "address": "1500 Druid Hill Ave, Baltimore, MD 21217",
-      "lat": 39.302,
-      "lng": -76.633,
-      "phone": "410-555-0105",
+      "description": "145-bed 24/7 shelter for families with children, run by St. Vincent de Paul of Baltimore. Family rooms, meals, showers, laundry, case management.",
+      "address": "1114 N Mount St, Baltimore, MD 21217",
+      "lat": 39.30177,
+      "lng": -76.64517,
+      "phone": "443-984-9540",
       "hours": [
         {
           "days": [
@@ -212,43 +171,43 @@
             "sat",
             "sun"
           ],
-          "open": "17:00",
-          "close": "09:00"
+          "open": "00:00",
+          "close": "23:59"
         }
       ],
       "intake_deadline": "21:00",
       "eligibility": {
         "min_age": 18,
         "requires_id": false,
-        "gender": "female",
         "families_ok": true,
         "children_ok": true,
         "pets_ok": false,
-        "accessibility": [
-          "step_free"
-        ]
+        "accessibility": [],
+        "required_documents": []
       },
       "cost": 0,
-      "capacity": 15,
+      "capacity": null,
       "status": "available",
-      "source_url": null,
-      "last_verified": null,
-      "notes": "Women and children only.",
+      "website_url": "https://www.vincentbaltimore.org/what-we-do/homelessness/",
+      "source_url": "https://search.211md.org/search/666f05ad-1380-59ed-96ef-14f718366793",
+      "simulated": false,
+      "last_verified": "2026-09-18",
+      "notes": "Serves women with children under 18, pregnant women, men with children and two-parent families. Placement is through Coordinated Entry (443-984-9540). Shelter office 410-982-0845, Mon–Fri 9:30 AM–5 PM.",
       "tags": [
-        "families"
-      ],
-      "simulated": true,
-      "website_url": null
+        "families_only",
+        "meals_included",
+        "referral_required"
+      ]
     },
     {
-      "id": "shelter_family_south",
-      "name": "South Baltimore Family Center",
-      "service": "emergency_housing",
-      "description": "Family emergency shelter with private rooms.",
-      "address": "3600 S Hanover St, Baltimore, MD 21225",
-      "lat": 39.24,
-      "lng": -76.606,
-      "phone": "410-555-0106",
+      "id": "our_daily_bread",
+      "name": "Our Daily Bread Employment Center",
+      "service": "food",
+      "description": "Maryland's largest hot meal program (Catholic Charities). Free lunch every day; weekday breakfast for adults 55+ and people with special needs.",
+      "address": "725 Fallsway, Baltimore, MD 21202",
+      "lat": 39.29817,
+      "lng": -76.61023,
+      "phone": "667-600-3400",
       "hours": [
         {
           "days": [
@@ -260,46 +219,38 @@
             "sat",
             "sun"
           ],
-          "open": "17:00",
-          "close": "09:00"
+          "open": "10:30",
+          "close": "12:30"
         }
       ],
-      "intake_deadline": "21:00",
+      "intake_deadline": null,
       "eligibility": {
-        "min_age": 18,
-        "requires_id": true,
+        "requires_id": false,
         "families_ok": true,
-        "required_documents": [
-          "Photo ID",
-          "Birth certificates for children"
-        ],
         "children_ok": true,
         "pets_ok": false,
-        "accessibility": [
-          "step_free"
-        ]
+        "accessibility": [],
+        "required_documents": []
       },
       "cost": 0,
-      "capacity": 8,
+      "capacity": null,
       "status": "available",
-      "source_url": null,
-      "last_verified": null,
-      "notes": "Families prioritized. Single adults accepted when space allows.",
-      "tags": [
-        "families"
-      ],
-      "simulated": true,
-      "website_url": null
+      "website_url": "https://cc-md.org/programs/odb-employment-center/",
+      "source_url": "https://cc-md.org/programs/odb-employment-center/",
+      "simulated": false,
+      "last_verified": "2026-09-18",
+      "notes": "Lunch daily 10:30 AM–12:30 PM, no questions asked. Senior breakfast Mon–Fri 7:45–8:30 AM.",
+      "tags": []
     },
     {
-      "id": "youth_dropin",
-      "name": "Youth Connect Drop-In Center (14-24)",
-      "service": "long_term_assistance",
-      "description": "Daytime drop-in center for youth: showers, laundry, case management, shelter referrals.",
-      "address": "2100 N Charles St, Baltimore, MD 21218",
-      "lat": 39.315,
-      "lng": -76.616,
-      "phone": "410-555-0107",
+      "id": "beans_and_bread",
+      "name": "Beans & Bread (St. Vincent de Paul)",
+      "service": "food",
+      "description": "Day resource center in Fells Point with weekday breakfast and lunch, showers, mail and case management.",
+      "address": "402 S Bond St, Baltimore, MD 21231",
+      "lat": 39.28637,
+      "lng": -76.59553,
+      "phone": "410-732-1892",
       "hours": [
         {
           "days": [
@@ -310,221 +261,8 @@
             "fri"
           ],
           "open": "09:00",
-          "close": "17:00"
-        }
-      ],
-      "intake_deadline": null,
-      "eligibility": {
-        "min_age": 14,
-        "max_age": 24,
-        "requires_id": false,
-        "families_ok": false,
-        "children_ok": false,
-        "pets_ok": false,
-        "accessibility": [
-          "step_free"
-        ]
-      },
-      "cost": 0,
-      "capacity": null,
-      "status": "available",
-      "source_url": null,
-      "last_verified": null,
-      "notes": "Daytime only. Can place youth in host homes.",
-      "tags": [
-        "youth"
-      ],
-      "simulated": true,
-      "website_url": null
-    },
-    {
-      "id": "hostel_lowcost",
-      "name": "Charles Street Low-Cost Beds",
-      "service": "emergency_housing",
-      "description": "Low-cost dormitory beds, $15 per night.",
-      "address": "800 N Charles St, Baltimore, MD 21201",
-      "lat": 39.3,
-      "lng": -76.616,
-      "phone": "410-555-0108",
-      "hours": [
-        {
-          "days": [
-            "mon",
-            "tue",
-            "wed",
-            "thu",
-            "fri",
-            "sat",
-            "sun"
-          ],
-          "open": "15:00",
-          "close": "11:00"
-        }
-      ],
-      "intake_deadline": "23:00",
-      "eligibility": {
-        "min_age": 18,
-        "requires_id": true,
-        "families_ok": false,
-        "required_documents": [
-          "Photo ID"
-        ],
-        "children_ok": false,
-        "pets_ok": false,
-        "accessibility": [
-          "step_free"
-        ]
-      },
-      "cost": 15,
-      "capacity": 40,
-      "status": "available",
-      "source_url": null,
-      "last_verified": null,
-      "notes": "",
-      "simulated": true,
-      "website_url": null
-    },
-    {
-      "id": "shelter_westside",
-      "name": "Westside Winter Shelter",
-      "service": "emergency_housing",
-      "description": "Seasonal overflow shelter.",
-      "address": "1800 W Franklin St, Baltimore, MD 21223",
-      "lat": 39.293,
-      "lng": -76.648,
-      "phone": "410-555-0109",
-      "hours": [
-        {
-          "days": [
-            "mon",
-            "tue",
-            "wed",
-            "thu",
-            "fri",
-            "sat",
-            "sun"
-          ],
-          "open": "19:00",
-          "close": "07:00"
-        }
-      ],
-      "intake_deadline": "22:00",
-      "eligibility": {
-        "min_age": 18,
-        "requires_id": false,
-        "families_ok": false,
-        "children_ok": false,
-        "pets_ok": false,
-        "accessibility": [
-          "step_free"
-        ]
-      },
-      "cost": 0,
-      "capacity": 50,
-      "status": "closed",
-      "source_url": null,
-      "last_verified": null,
-      "notes": "Closed until November.",
-      "simulated": true,
-      "website_url": null
-    },
-    {
-      "id": "kitchen_st_vincent",
-      "name": "St. Vincent Community Kitchen",
-      "service": "food",
-      "description": "Free hot dinner, no questions asked.",
-      "address": "120 N Front St, Baltimore, MD 21202",
-      "lat": 39.2948,
-      "lng": -76.609,
-      "phone": "410-555-0201",
-      "hours": [
-        {
-          "days": [
-            "mon",
-            "tue",
-            "wed",
-            "thu",
-            "fri",
-            "sat",
-            "sun"
-          ],
-          "open": "17:00",
-          "close": "19:30"
-        }
-      ],
-      "intake_deadline": null,
-      "eligibility": {
-        "requires_id": false,
-        "families_ok": true,
-        "children_ok": true,
-        "pets_ok": false,
-        "accessibility": [
-          "step_free",
-          "hearing_support"
-        ]
-      },
-      "cost": 0,
-      "capacity": null,
-      "status": "available",
-      "source_url": null,
-      "last_verified": null,
-      "notes": "Dinner served until 7:30 PM.",
-      "simulated": true,
-      "website_url": null
-    },
-    {
-      "id": "meals_eastside_street",
-      "name": "Eastside Street Meals",
-      "service": "food",
-      "description": "Mobile meal van, evening service.",
-      "address": "N Broadway & E Biddle St, Baltimore, MD 21213",
-      "lat": 39.307,
-      "lng": -76.5905,
-      "phone": null,
-      "hours": [
-        {
-          "days": [
-            "mon",
-            "tue",
-            "wed",
-            "thu",
-            "fri",
-            "sat",
-            "sun"
-          ],
-          "open": "19:00",
-          "close": "20:30"
-        }
-      ],
-      "intake_deadline": null,
-      "eligibility": {
-        "requires_id": false,
-        "families_ok": true,
-        "children_ok": true,
-        "pets_ok": true,
-        "accessibility": [
-          "step_free"
-        ]
-      },
-      "cost": 0,
-      "capacity": null,
-      "status": "available",
-      "source_url": null,
-      "last_verified": null,
-      "notes": "Bagged dinners.",
-      "simulated": true,
-      "website_url": null
-    },
-    {
-      "id": "kitchen_early_dinner",
-      "name": "Franklin Square Early Dinner",
-      "service": "food",
-      "description": "Early hot dinner program.",
-      "address": "1400 W Fayette St, Baltimore, MD 21223",
-      "lat": 39.29,
-      "lng": -76.64,
-      "phone": "410-555-0203",
-      "hours": [
+          "close": "10:00"
+        },
         {
           "days": [
             "mon",
@@ -533,8 +271,8 @@
             "thu",
             "fri"
           ],
-          "open": "16:00",
-          "close": "18:00"
+          "open": "11:00",
+          "close": "13:00"
         }
       ],
       "intake_deadline": null,
@@ -543,28 +281,28 @@
         "families_ok": true,
         "children_ok": true,
         "pets_ok": false,
-        "accessibility": [
-          "step_free"
-        ]
+        "accessibility": [],
+        "required_documents": []
       },
       "cost": 0,
       "capacity": null,
       "status": "available",
-      "source_url": null,
-      "last_verified": null,
-      "notes": "",
-      "simulated": true,
-      "website_url": null
+      "website_url": "https://www.vincentbaltimore.org/what-we-do/homelessness/beans-and-bread/",
+      "source_url": "https://www.vincentbaltimore.org/what-we-do/homelessness/beans-and-bread/",
+      "simulated": false,
+      "last_verified": "2026-09-18",
+      "notes": "Breakfast 9–10 AM and lunch 11 AM–1 PM, Monday–Friday. Center open 9 AM–2 PM (until 4 PM on Code Blue days).",
+      "tags": []
     },
     {
-      "id": "pantry_midtown",
-      "name": "Midtown Food Pantry",
+      "id": "franciscan_center",
+      "name": "The Franciscan Center of Baltimore",
       "service": "food",
-      "description": "Grocery pantry, take-home bags.",
-      "address": "1000 St Paul St, Baltimore, MD 21202",
-      "lat": 39.301,
-      "lng": -76.614,
-      "phone": "410-555-0204",
+      "description": "Weekday hot lunch and Tuesday/Wednesday dinner, plus emergency services, clothing and showers, in Old Goucher.",
+      "address": "101 W 23rd St, Baltimore, MD 21218",
+      "lat": 39.31408,
+      "lng": -76.6183,
+      "phone": "410-467-5340",
       "hours": [
         {
           "days": [
@@ -575,216 +313,14 @@
             "fri"
           ],
           "open": "10:00",
-          "close": "15:00"
-        }
-      ],
-      "intake_deadline": null,
-      "eligibility": {
-        "requires_id": true,
-        "families_ok": true,
-        "required_documents": [
-          "Photo ID",
-          "Proof of address"
-        ],
-        "children_ok": true,
-        "pets_ok": false,
-        "accessibility": [
-          "step_free"
-        ]
-      },
-      "cost": 0,
-      "capacity": null,
-      "status": "available",
-      "source_url": null,
-      "last_verified": null,
-      "notes": "",
-      "simulated": true,
-      "website_url": null
-    },
-    {
-      "id": "breakfast_downtown",
-      "name": "Downtown Breakfast Program",
-      "service": "food",
-      "description": "Free hot breakfast every morning.",
-      "address": "300 Cathedral St, Baltimore, MD 21201",
-      "lat": 39.293,
-      "lng": -76.617,
-      "phone": "410-555-0205",
-      "hours": [
-        {
-          "days": [
-            "mon",
-            "tue",
-            "wed",
-            "thu",
-            "fri",
-            "sat",
-            "sun"
-          ],
-          "open": "07:00",
-          "close": "09:00"
-        }
-      ],
-      "intake_deadline": null,
-      "eligibility": {
-        "requires_id": false,
-        "families_ok": true,
-        "children_ok": true,
-        "pets_ok": false,
-        "accessibility": [
-          "step_free"
-        ]
-      },
-      "cost": 0,
-      "capacity": null,
-      "status": "available",
-      "source_url": null,
-      "last_verified": null,
-      "notes": "",
-      "simulated": true,
-      "website_url": null
-    },
-    {
-      "id": "kitchen_highlandtown",
-      "name": "Highlandtown Soup Kitchen",
-      "service": "food",
-      "description": "Hot dinner, Spanish-speaking staff.",
-      "address": "3500 Eastern Ave, Baltimore, MD 21224",
-      "lat": 39.287,
-      "lng": -76.568,
-      "phone": "410-555-0206",
-      "hours": [
-        {
-          "days": [
-            "mon",
-            "tue",
-            "wed",
-            "thu",
-            "fri",
-            "sat",
-            "sun"
-          ],
-          "open": "17:30",
-          "close": "19:00"
-        }
-      ],
-      "intake_deadline": null,
-      "eligibility": {
-        "requires_id": false,
-        "families_ok": true,
-        "children_ok": true,
-        "pets_ok": false,
-        "accessibility": [
-          "step_free"
-        ]
-      },
-      "cost": 0,
-      "capacity": null,
-      "status": "available",
-      "source_url": null,
-      "last_verified": null,
-      "notes": "",
-      "simulated": true,
-      "website_url": null
-    },
-    {
-      "id": "kitchen_federal_hill",
-      "name": "Federal Hill Evening Meal",
-      "service": "food",
-      "description": "Church-run dinner.",
-      "address": "1000 Light St, Baltimore, MD 21230",
-      "lat": 39.278,
-      "lng": -76.6115,
-      "phone": "410-555-0207",
-      "hours": [
-        {
-          "days": [
-            "tue",
-            "thu",
-            "sat"
-          ],
-          "open": "17:30",
-          "close": "19:00"
-        }
-      ],
-      "intake_deadline": null,
-      "eligibility": {
-        "requires_id": false,
-        "families_ok": true,
-        "children_ok": true,
-        "pets_ok": false,
-        "accessibility": [
-          "step_free"
-        ]
-      },
-      "cost": 0,
-      "capacity": null,
-      "status": "available",
-      "source_url": null,
-      "last_verified": null,
-      "notes": "Tue/Thu/Sat only.",
-      "simulated": true,
-      "website_url": null
-    },
-    {
-      "id": "pantry_waverly",
-      "name": "Waverly Community Pantry",
-      "service": "food",
-      "description": "Weekend pantry.",
-      "address": "3200 Greenmount Ave, Baltimore, MD 21218",
-      "lat": 39.327,
-      "lng": -76.606,
-      "phone": "410-555-0208",
-      "hours": [
-        {
-          "days": [
-            "sat",
-            "sun"
-          ],
-          "open": "11:00",
           "close": "14:00"
-        }
-      ],
-      "intake_deadline": null,
-      "eligibility": {
-        "requires_id": false,
-        "families_ok": true,
-        "children_ok": true,
-        "pets_ok": false,
-        "accessibility": [
-          "step_free"
-        ]
-      },
-      "cost": 0,
-      "capacity": null,
-      "status": "available",
-      "source_url": null,
-      "last_verified": null,
-      "notes": "",
-      "simulated": true,
-      "website_url": null
-    },
-    {
-      "id": "meals_brooklyn",
-      "name": "Brooklyn Community Dinner",
-      "service": "food",
-      "description": "Nightly dinner in South Baltimore.",
-      "address": "3700 S Hanover St, Baltimore, MD 21225",
-      "lat": 39.239,
-      "lng": -76.608,
-      "phone": "410-555-0209",
-      "hours": [
+        },
         {
           "days": [
-            "mon",
             "tue",
-            "wed",
-            "thu",
-            "fri",
-            "sat",
-            "sun"
+            "wed"
           ],
-          "open": "17:00",
+          "open": "17:30",
           "close": "19:30"
         }
       ],
@@ -794,28 +330,28 @@
         "families_ok": true,
         "children_ok": true,
         "pets_ok": false,
-        "accessibility": [
-          "step_free"
-        ]
+        "accessibility": [],
+        "required_documents": []
       },
       "cost": 0,
       "capacity": null,
       "status": "available",
-      "source_url": null,
-      "last_verified": null,
-      "notes": "",
-      "simulated": true,
-      "website_url": null
+      "website_url": "https://www.fcbmore.org/",
+      "source_url": "https://search.211md.org/search/c86e743d-06b0-545e-a533-30fed11e78e6",
+      "simulated": false,
+      "last_verified": "2026-09-18",
+      "notes": "Lunch Monday–Friday 10 AM–2 PM and dinner Tuesday and Wednesday 5:30–7:30 PM (fcbmore.org; times from 211 Maryland).",
+      "tags": []
     },
     {
-      "id": "housing_resource_center",
-      "name": "Baltimore Housing Resource Center",
-      "service": "long_term_assistance",
-      "description": "Coordinated entry for longer-term housing, rapid rehousing intake.",
-      "address": "620 Fallsway, Baltimore, MD 21202",
-      "lat": 39.2965,
-      "lng": -76.6055,
-      "phone": "410-555-0301",
+      "id": "pauls_place",
+      "name": "Paul's Place",
+      "service": "food",
+      "description": "Hot lunch, food pantry, nurse's clinic, clothing, showers and laundry in Pigtown / Southwest Baltimore.",
+      "address": "1118 Ward St, Baltimore, MD 21230",
+      "lat": 39.28194,
+      "lng": -76.63293,
+      "phone": "410-625-0775",
       "hours": [
         {
           "days": [
@@ -825,41 +361,164 @@
             "thu",
             "fri"
           ],
-          "open": "09:00",
-          "close": "16:00"
+          "open": "11:00",
+          "close": "12:30"
         }
       ],
-      "intake_deadline": "15:00",
+      "intake_deadline": null,
       "eligibility": {
-        "min_age": 18,
         "requires_id": false,
         "families_ok": true,
-        "required_documents": [],
         "children_ok": true,
-        "pets_ok": true,
-        "accessibility": [
-          "step_free",
-          "hearing_support"
-        ]
+        "pets_ok": false,
+        "accessibility": [],
+        "required_documents": []
       },
       "cost": 0,
       "capacity": null,
       "status": "available",
-      "source_url": null,
-      "last_verified": null,
-      "notes": "Arrive early; intake is first-come. Bring any ID you have.",
-      "simulated": true,
-      "website_url": null
+      "website_url": "https://paulsplaceoutreach.org/",
+      "source_url": "https://www.charmcare.org/locations/paul-s-place-inc",
+      "simulated": false,
+      "last_verified": "2026-09-18",
+      "notes": "Lunch Monday–Friday 11:00 AM–12:30 PM. Other programs have different hours; call before visiting.",
+      "tags": []
     },
     {
-      "id": "community_action",
-      "name": "Community Action Partnership Center",
+      "id": "manna_house",
+      "name": "Manna House",
+      "service": "food",
+      "description": "Free hot breakfast and a daytime drop-in center with a case manager, mail, phones and toiletries.",
+      "address": "435 E 25th St, Baltimore, MD 21218",
+      "lat": 39.3179,
+      "lng": -76.61,
+      "phone": "410-889-3001",
+      "hours": [
+        {
+          "days": [
+            "mon",
+            "tue",
+            "wed",
+            "thu",
+            "fri"
+          ],
+          "open": "08:00",
+          "close": "10:00"
+        }
+      ],
+      "intake_deadline": null,
+      "eligibility": {
+        "requires_id": false,
+        "families_ok": true,
+        "children_ok": true,
+        "pets_ok": false,
+        "accessibility": [],
+        "required_documents": []
+      },
+      "cost": 0,
+      "capacity": null,
+      "status": "available",
+      "website_url": "https://mannahouseinc.org/",
+      "source_url": "https://mannahouseinc.org/our-services/",
+      "simulated": false,
+      "last_verified": "2026-09-18",
+      "notes": "Breakfast Monday–Friday 8–10 AM, no application. Day shelter 11 AM–3 PM with case management.",
+      "tags": []
+    },
+    {
+      "id": "hchmd_downtown",
+      "name": "Health Care for the Homeless (Downtown)",
       "service": "long_term_assistance",
-      "description": "Emergency rental assistance, utility help, benefits enrollment.",
-      "address": "3411 Bank St, Baltimore, MD 21224",
-      "lat": 39.288,
-      "lng": -76.57,
-      "phone": "410-555-0302",
+      "description": "Walk-in medical, dental and behavioral health care plus insurance and benefits enrollment and case management for people experiencing homelessness.",
+      "address": "421 Fallsway, Baltimore, MD 21202",
+      "lat": 39.29379,
+      "lng": -76.60936,
+      "phone": "410-837-5533",
+      "hours": [
+        {
+          "days": [
+            "mon",
+            "tue",
+            "wed",
+            "thu",
+            "fri"
+          ],
+          "open": "07:00",
+          "close": "17:00"
+        }
+      ],
+      "intake_deadline": "12:00",
+      "eligibility": {
+        "requires_id": false,
+        "families_ok": true,
+        "children_ok": true,
+        "pets_ok": false,
+        "accessibility": [],
+        "required_documents": []
+      },
+      "cost": 0,
+      "capacity": null,
+      "status": "available",
+      "website_url": "https://www.hchmd.org/",
+      "source_url": "https://www.hchmd.org/hours-and-locations",
+      "simulated": false,
+      "last_verified": "2026-09-18",
+      "notes": "Mon–Fri 7 AM–5 PM (4th and 5th Thursdays close at noon). Walk in before 12 PM for same-day care, benefits enrollment and case management.",
+      "tags": []
+    },
+    {
+      "id": "yes_dropin",
+      "name": "YES Drop-In Center (Youth Empowered Society)",
+      "service": "long_term_assistance",
+      "description": "Baltimore's drop-in center for young people experiencing homelessness: housing-focused services, meals, supplies, case management and peer support.",
+      "address": "1111 Park Ave, Suite A, Baltimore, MD 21201",
+      "lat": 39.30547,
+      "lng": -76.62112,
+      "phone": "410-235-7744",
+      "hours": [
+        {
+          "days": [
+            "mon",
+            "tue",
+            "wed",
+            "thu"
+          ],
+          "open": "12:30",
+          "close": "16:00"
+        }
+      ],
+      "intake_deadline": "15:30",
+      "eligibility": {
+        "min_age": 14,
+        "max_age": 25,
+        "requires_id": false,
+        "families_ok": false,
+        "children_ok": false,
+        "pets_ok": false,
+        "accessibility": [],
+        "required_documents": []
+      },
+      "cost": 0,
+      "capacity": null,
+      "status": "available",
+      "website_url": "https://yesdropincenter.org/",
+      "source_url": "https://yesdropincenter.org/contact-us/",
+      "simulated": false,
+      "last_verified": "2026-09-18",
+      "notes": "Drop-in hours 12:30–4:00 PM Monday–Thursday at the Park Ave location (older listings show 2315 N Charles St). Ages 14–25.",
+      "tags": [
+        "youth"
+      ]
+    },
+    {
+      "id": "mohs_coordinated_entry",
+      "name": "Coordinated Entry — Mayor's Office of Homeless Services",
+      "service": "long_term_assistance",
+      "description": "Baltimore City's single front door for shelter referral and housing assessment. Call to be assessed and placed into shelter and housing programs.",
+      "address": "7 E Redwood St, 5th Floor, Baltimore, MD 21202",
+      "lat": 39.28911,
+      "lng": -76.61198,
+      "phone": "443-984-9540",
       "hours": [
         {
           "days": [
@@ -870,169 +529,27 @@
             "fri"
           ],
           "open": "08:30",
-          "close": "17:00"
+          "close": "16:30"
         }
       ],
       "intake_deadline": "16:00",
       "eligibility": {
-        "min_age": 18,
-        "requires_id": true,
-        "families_ok": true,
-        "required_documents": [
-          "Photo ID",
-          "Proof of income",
-          "Social Security card"
-        ],
-        "children_ok": true,
-        "pets_ok": false,
-        "accessibility": [
-          "step_free"
-        ]
-      },
-      "cost": 0,
-      "capacity": null,
-      "status": "available",
-      "source_url": null,
-      "last_verified": null,
-      "notes": "",
-      "simulated": true,
-      "website_url": null
-    },
-    {
-      "id": "youth_housing_navigator",
-      "name": "Youth Housing Navigator (18-24)",
-      "service": "long_term_assistance",
-      "description": "Transitional housing placement for young adults.",
-      "address": "2100 N Charles St, Baltimore, MD 21218",
-      "lat": 39.315,
-      "lng": -76.616,
-      "phone": "410-555-0303",
-      "hours": [
-        {
-          "days": [
-            "mon",
-            "tue",
-            "wed",
-            "thu",
-            "fri"
-          ],
-          "open": "10:00",
-          "close": "18:00"
-        }
-      ],
-      "intake_deadline": "17:00",
-      "eligibility": {
-        "min_age": 18,
-        "max_age": 24,
-        "requires_id": false,
-        "families_ok": false,
-        "children_ok": false,
-        "pets_ok": false,
-        "accessibility": [
-          "step_free"
-        ]
-      },
-      "cost": 0,
-      "capacity": null,
-      "status": "available",
-      "source_url": null,
-      "last_verified": null,
-      "notes": "Ages 18-24. Can help obtain a state ID.",
-      "tags": [
-        "youth"
-      ],
-      "simulated": true,
-      "website_url": null
-    },
-    {
-      "id": "id_clinic",
-      "name": "ID & Documents Clinic",
-      "service": "long_term_assistance",
-      "description": "Helps replace lost IDs, birth certificates and Social Security cards for free.",
-      "address": "111 Park Ave, Baltimore, MD 21201",
-      "lat": 39.2915,
-      "lng": -76.619,
-      "phone": "410-555-0304",
-      "hours": [
-        {
-          "days": [
-            "mon",
-            "wed",
-            "fri"
-          ],
-          "open": "09:00",
-          "close": "13:00"
-        }
-      ],
-      "intake_deadline": "12:30",
-      "eligibility": {
         "requires_id": false,
         "families_ok": true,
         "children_ok": true,
-        "pets_ok": true,
-        "accessibility": [
-          "step_free"
-        ]
-      },
-      "cost": 0,
-      "capacity": null,
-      "status": "available",
-      "source_url": null,
-      "last_verified": null,
-      "notes": "Mon/Wed/Fri mornings.",
-      "tags": [
-        "id_replacement"
-      ],
-      "simulated": true,
-      "website_url": null
-    },
-    {
-      "id": "family_services_west",
-      "name": "West Baltimore Family Services",
-      "service": "long_term_assistance",
-      "description": "Case management and housing vouchers for families.",
-      "address": "2000 W North Ave, Baltimore, MD 21217",
-      "lat": 39.31,
-      "lng": -76.648,
-      "phone": "410-555-0305",
-      "hours": [
-        {
-          "days": [
-            "mon",
-            "tue",
-            "wed",
-            "thu",
-            "fri"
-          ],
-          "open": "09:00",
-          "close": "17:00"
-        }
-      ],
-      "intake_deadline": "16:00",
-      "eligibility": {
-        "min_age": 18,
-        "requires_id": true,
-        "families_ok": true,
-        "required_documents": [
-          "Photo ID"
-        ],
-        "children_ok": true,
         "pets_ok": false,
-        "accessibility": [
-          "step_free"
-        ]
+        "accessibility": [],
+        "required_documents": []
       },
       "cost": 0,
       "capacity": null,
       "status": "available",
-      "source_url": null,
-      "last_verified": null,
-      "notes": "",
-      "tags": [
-        "families"
-      ],
-      "simulated": true,
-      "website_url": null
+      "website_url": "https://www.baltimorecity.gov/homeless",
+      "source_url": "https://www.baltimorecity.gov/homeless/contact-us",
+      "simulated": false,
+      "last_verified": "2026-09-18",
+      "notes": "Office at 7 E. Redwood St (5th & 8th floors), Monday–Friday 8:30 AM–4:30 PM. Shelter referral line 443-984-9540 also covers after-hours, weekend and holiday requests. Dial 2-1-1 for other help.",
+      "tags": []
     }
   ]
 }

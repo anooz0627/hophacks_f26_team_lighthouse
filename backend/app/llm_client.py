@@ -29,7 +29,7 @@ def get_client():
         from google import genai
 
         key = os.environ.get("GEMINI_API_KEY") or os.environ["GOOGLE_API_KEY"]
-        return genai.Client(api_key=key)
+        return genai.Client(api_key=key, http_options={"timeout": 8000})
     except Exception:
         return None
 

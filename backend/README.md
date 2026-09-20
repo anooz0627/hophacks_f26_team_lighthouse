@@ -20,6 +20,12 @@ AIDGRAPH_DISABLE_LLM=1 .venv/bin/uvicorn app.main:app --reload --port 8000
 - `planner/timeline.py`: ordered call, travel and visit steps.
 - `routers/plan.py`: `/extract`, reviewed-constraint `/plans`, and legacy endpoints.
 - `routers/resources.py`: listing, status simulation and reset.
-- `store.py`: local process memory for records, status changes and saved plans.
+- `store.py`: dataset loading and local process memory for status changes and saved plans.
 
-Every resource and transit record is illustrative. API docs: http://localhost:8000/docs. Root README covers the full workflow and limitations.
+## Datasets
+
+- `data/resources.json`: 12 sourced Baltimore organizations. Loaded by default.
+- `data/resources.demo.json`: synthetic records with guaranteed demo coverage. Selected with `AIDGRAPH_DATASET=demo`; the test suite pins this set in `tests/conftest.py`.
+- `data/transit.json`: approximate MTA CityLink routes shared by both datasets.
+
+Availability changes are simulated and travel times are estimates. API docs: http://localhost:8000/docs. The root README covers the full workflow and limitations.
