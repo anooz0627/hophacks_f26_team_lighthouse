@@ -69,12 +69,9 @@ export default function Home() {
   const [assistant, setAssistant] = useState<AssistantState>("idle");
   const [guideMessage, setGuideMessage] = useState<string | undefined>();
   const [invalidated, setInvalidated] = useState(false);
-<<<<<<< HEAD
   const [contextOpen, setContextOpen] = useState(false);
   const planColumn = useRef<HTMLDivElement>(null);
-=======
   const [showMap, setShowMap] = useState(true);
->>>>>>> dfe121b (feat: plan service, API routes and planner journey page with strategy comparison)
   const operation = useRef(false);
   const reviewHeading = useRef<HTMLHeadingElement>(null);
   const plan =
@@ -102,14 +99,11 @@ export default function Home() {
     };
   }, []);
   useEffect(() => {
-    if (phase === "review" || phase === "planned")
+    if (phase === "review" || phase === "planned") {
       reviewHeading.current?.focus({ preventScroll: true });
-<<<<<<< HEAD
       if (window.matchMedia("(max-width: 780px)").matches)
         planColumn.current?.scrollIntoView({ block: "start" });
     }
-=======
->>>>>>> dfe121b (feat: plan service, API routes and planner journey page with strategy comparison)
   }, [phase]);
 
   const setSituation = (value: string, example = false) => {
@@ -328,9 +322,8 @@ export default function Home() {
             ),
           )}
         </ol>
-        <div className="planner-layout">
+        <div className={`planner-layout ${constraints ? "has-context" : ""}`}>
           <div className="context-column">
-<<<<<<< HEAD
             {constraints && (
               <button
                 className="mobile-context-toggle"
@@ -362,35 +355,15 @@ export default function Home() {
                 onNeeds={setNeedOverrides}
                 onDeadline={setDeadlineOverride}
                 deadlineValue={deadlineOverride}
-=======
-            <SituationInput
-              text={text}
-              onTextChange={setSituation}
-              phase={phase}
-              error={!constraints ? error : null}
-              onSubmit={() => void understand()}
-              details={details}
-              onPatch={(patch) => setOverrides((old) => ({ ...old, ...patch }))}
-              onNeeds={setNeedOverrides}
-              onDeadline={setDeadlineOverride}
-              deadlineValue={deadlineOverride}
-            />
-            {constraints && phase !== "review" && (
-              <ConstraintsPanel
-                constraints={constraints}
-                onEdit={() => {
-                  if (!busy) setEdit(structuredClone(constraints));
-                }}
->>>>>>> dfe121b (feat: plan service, API routes and planner journey page with strategy comparison)
               />
-            )}
-            <div className="dataset-note">
-              <Icon name="info" size={18} />
-              <p>
-                <strong>A Baltimore demo, built for practice.</strong>All
-                resources, availability and travel estimates are illustrative.
-                For real community assistance, <a href="tel:211">call 211</a>.
-              </p>
+              {constraints && phase !== "review" && (
+                <ConstraintsPanel
+                  constraints={constraints}
+                  onEdit={() => {
+                    if (!busy) setEdit(structuredClone(constraints));
+                  }}
+                />
+              )}
             </div>
           </div>
           <div className="plan-column" ref={planColumn}>
