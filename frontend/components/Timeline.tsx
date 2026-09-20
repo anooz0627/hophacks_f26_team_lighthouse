@@ -4,6 +4,7 @@ import {
   STATUS_LABEL,
   formatUsd,
   timeLabel,
+  timelineDayLabel,
 } from "@/lib/format";
 import Icon from "./Icon";
 import { ResourceActions, eligibility } from "./ResourceDetails";
@@ -60,20 +61,7 @@ export default function Timeline({
       {dates.map((date, index) => (
         <div className="timeline-day" key={date}>
           <div className="day-heading">
-            <h3>
-              {date === plan.now.slice(0, 10)
-                ? "Tonight"
-                : date ===
-                    new Date(
-                      new Date(plan.now).getTime() + 86400000,
-                    ).toLocaleDateString("en-CA")
-                  ? "Tomorrow"
-                  : new Date(`${date}T12:00:00`).toLocaleDateString("en-US", {
-                      weekday: "long",
-                      month: "short",
-                      day: "numeric",
-                    })}
-            </h3>
+            <h3>{timelineDayLabel(date, plan.now)}</h3>
             <span>
               {index === 0 ? "Your next steps" : "Keep moving forward"} ·
               estimated times

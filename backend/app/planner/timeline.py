@@ -44,7 +44,7 @@ def build_timeline(result: SearchResult, now: datetime) -> list[PlanStep]:
             mode_title = MODE_TITLE.get(leg.mode, f"Take {leg.route_name}")
             steps.append(_step(n, depart, type="travel", title=f"{mode_title} to {r.name}", detail=leg.describe(),
                                route_id=leg.route_id, mode=leg.mode, duration_min=leg.duration_min,
-                               cost_usd=leg.cost_usd, polyline=leg.polyline, day_label=v.day_label,
+                               cost_usd=leg.cost_usd, polyline=leg.polyline,
                                resource_id=r.id))
             n += 1
         win = window_containing(r, v.arrival)
@@ -60,7 +60,7 @@ def build_timeline(result: SearchResult, now: datetime) -> list[PlanStep]:
         bring = list(r.eligibility.required_documents)
         steps.append(_step(n, v.arrival, type="visit", title=f"{ACTION[r.service]} {r.name}", resource_id=r.id,
                            detail=" · ".join(detail_bits), lat=r.lat, lng=r.lng, warnings=v.warnings, bring=bring,
-                           day_label=v.day_label, cost_usd=r.cost))
+                           cost_usd=r.cost))
         n += 1
 
     if result.unmet:
@@ -71,4 +71,6 @@ def build_timeline(result: SearchResult, now: datetime) -> list[PlanStep]:
     steps.sort(key=lambda step: step.time_iso)
     for index, step in enumerate(steps, 1):
         step.order = index
+        day_offset = (datetime.fromisoformat(step.time_iso).date() - now.date()).days
+        step.day_label = "tonight" if day_offset == 0 else "tomorrow" if day_offset == 1 else "later"
     return steps

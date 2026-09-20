@@ -305,6 +305,9 @@ export default function Home() {
             </div>
           </div>
         </div>
+        <p className="mobile-demo-note">
+          Demo: September 17, 2026 · 6:00 PM Baltimore time
+        </p>
         <ol className="journey" aria-label="Planning progress">
           {["Your situation", "Review your details", "Your action plan"].map(
             (label, i) => (

@@ -26,6 +26,13 @@ def extract_constraints(text: str) -> UserConstraints:
         raise HTTPException(422, INVALID_VALUES) from exc
 
 
+def validate_constraints(uc: UserConstraints) -> None:
+    if not uc.needs:
+        raise HTTPException(422, "Select at least one service need to build a plan.")
+    if any(need.deadline == "custom" for need in uc.needs) and not uc.constraints.custom_deadline:
+        raise HTTPException(422, "Add a custom deadline or choose another deadline.")
+
+
 @router.post("/extract", response_model=UserConstraints)
 def extract(body: ExtractRequest) -> UserConstraints:
     return extract_constraints(body.text)
@@ -42,6 +49,7 @@ def create_plan(body: PlanRequest) -> Plan:
 
 @router.post("/plan/from-constraints", response_model=Plan)
 def plan_from_constraints(body: UserConstraints, now: Optional[datetime] = None) -> Plan:
+    validate_constraints(body)
     plan = make_plan(body, now=now)
     plan.explanation = explain.summarize(plan)
     store.save_plan(plan)
@@ -55,7 +63,7 @@ def replan(body: ReplanRequest) -> ReplanResponse:
         raise HTTPException(404, "plan not found")
     now = body.now or datetime.fromisoformat(old.now)
     uc = old.constraints.model_copy(deep=True)
-    new = make_plan(uc, now=now, origin=uc.constraints.current_location)
+    new = make_plan(uc, now=now, origin=uc.constraints.current_location, strategy=old.strategy)
     new.explanation = explain.summarize(new)
     store.save_plan(new)
     diff = diff_plans(old, new)
@@ -69,8 +77,5 @@ def replan(body: ReplanRequest) -> ReplanResponse:
 
 @router.post("/plans", response_model=PlanBundle)
 def plan_strategies(body: PlanBundleRequest) -> PlanBundle:
-    if not body.constraints.needs:
-        raise HTTPException(422, "Select at least one service need to build a plan.")
-    if any(n.deadline == "custom" for n in body.constraints.needs) and not body.constraints.constraints.custom_deadline:
-        raise HTTPException(422, "Add a custom deadline or choose another deadline.")
+    validate_constraints(body.constraints)
     return make_bundle(body.constraints, body.now, body.previous_plan_id)

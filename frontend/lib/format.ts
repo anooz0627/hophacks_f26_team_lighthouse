@@ -88,6 +88,22 @@ export const MODE_STYLE: Record<
 export function demoNowIso(): string {
   return "2026-09-17T18:00:00";
 }
+
+export function timelineDayLabel(date: string, now: string): string {
+  if (date === now.slice(0, 10)) return "Tonight";
+
+  const tomorrow = new Date(`${now.slice(0, 10)}T12:00:00Z`);
+  tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+  if (date === tomorrow.toISOString().slice(0, 10)) return "Tomorrow";
+
+  return new Date(`${date}T12:00:00Z`).toLocaleDateString("en-US", {
+    timeZone: "UTC",
+    weekday: "long",
+    month: "short",
+    day: "numeric",
+  });
+}
+
 export function timeLabel(time: string): string {
   const [h, m] = time.split(":").map(Number);
   return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`;

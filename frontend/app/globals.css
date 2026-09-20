@@ -1377,6 +1377,9 @@ input[type="radio"] {
   color: var(--purple);
   margin-bottom: 9px;
 }
+.mobile-demo-note {
+  display: none;
+}
 .demo-clock {
   display: flex;
   gap: 10px;
@@ -1545,6 +1548,12 @@ input[type="radio"] {
   }
   .demo-clock {
     display: none;
+  }
+  .mobile-demo-note {
+    display: block;
+    color: var(--muted);
+    font-size: 0.75rem;
+    margin: -8px 0 20px;
   }
   .dataset-note {
     display: none;
