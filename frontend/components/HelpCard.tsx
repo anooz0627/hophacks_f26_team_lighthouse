@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { Plan, PlanStep, Resource } from "@/lib/types";
 import { SERVICE_LABEL, timeLabel } from "@/lib/format";
 import { speakText } from "@/lib/api";
@@ -82,11 +83,16 @@ export default function HelpCard({
   resource?: Resource;
   voice: boolean;
 }) {
-  const base = useMemo(() => buildLines(plan, step, resource), [plan, step, resource]);
+  const base = useMemo(
+    () => buildLines(plan, step, resource),
+    [plan, step, resource],
+  );
   const [overrides, setOverrides] = useState<Record<string, boolean>>({});
   const lines = base.map((l) => ({ ...l, on: overrides[l.id] ?? l.on }));
   const [custom, setCustom] = useState("");
-  const [audio, setAudio] = useState<"idle" | "loading" | "playing" | "error">("idle");
+  const [audio, setAudio] = useState<"idle" | "loading" | "playing" | "error">(
+    "idle",
+  );
   const player = useRef<HTMLAudioElement | null>(null);
   useEffect(
     () => () => {
@@ -94,6 +100,11 @@ export default function HelpCard({
     },
     [],
   );
+  useEffect(() => {
+    if (!open) return;
+    document.body.classList.add("help-card-open");
+    return () => document.body.classList.remove("help-card-open");
+  }, [open]);
   const shown = [
     ...lines.filter((l) => l.on).map((l) => l.text),
     ...(custom.trim() ? [custom.trim()] : []),
@@ -117,55 +128,78 @@ export default function HelpCard({
       setAudio("error");
     }
   };
+  const printable =
+    open && typeof document !== "undefined"
+      ? createPortal(
+          <div className="help-print" aria-hidden="true">
+            <p className="help-print-title">Lighthouse help card</p>
+            {shown.map((t) => (
+              <p key={t}>{t}</p>
+            ))}
+          </div>,
+          document.body,
+        )
+      : null;
   return (
-    <Modal open={open} onClose={onClose} title="Help card" wide>
-      <p className="muted">
-        Show this screen to a staff member. Tick what you want to share.
-      </p>
-      <div className="help-card" role="region" aria-label="Help card text">
-        {shown.length ? (
-          shown.map((t) => <p key={t}>{t}</p>)
-        ) : (
-          <p className="muted">Select at least one line below.</p>
-        )}
-      </div>
-      <div className="help-actions">
-        {voice && (
-          <button className="button" onClick={() => void speak()} disabled={audio === "loading" || !shown.length}>
-            {audio === "loading" ? <Spinner /> : <Icon name="speaker" size={16} />}
-            {audio === "playing" ? "Stop" : "Read aloud"}
+    <>
+      {printable}
+      <Modal open={open} onClose={onClose} title="Help card" wide>
+        <p className="muted">
+          Show this screen to a staff member. Tick what you want to share.
+        </p>
+        <div className="help-card" role="region" aria-label="Help card text">
+          {shown.length ? (
+            shown.map((t) => <p key={t}>{t}</p>)
+          ) : (
+            <p className="muted">Select at least one line below.</p>
+          )}
+        </div>
+        <div className="help-actions">
+          {voice && (
+            <button
+              className="button"
+              onClick={() => void speak()}
+              disabled={audio === "loading" || !shown.length}
+            >
+              {audio === "loading" ? (
+                <Spinner />
+              ) : (
+                <Icon name="speaker" size={16} />
+              )}
+              {audio === "playing" ? "Stop" : "Read aloud"}
+            </button>
+          )}
+          <button className="button" onClick={() => window.print()}>
+            <Icon name="external" size={16} /> Print or save
           </button>
-        )}
-        <button className="button" onClick={() => window.print()}>
-          <Icon name="external" size={16} /> Print or save
-        </button>
-        {audio === "error" && (
-          <span className="muted small">Audio is unavailable right now.</span>
-        )}
-      </div>
-      <div className="help-lines">
-        {lines.map((l) => (
-          <label key={l.id} className="check-field">
+          {audio === "error" && (
+            <span className="muted small">Audio is unavailable right now.</span>
+          )}
+        </div>
+        <div className="help-lines">
+          {lines.map((l) => (
+            <label key={l.id} className="check-field">
+              <input
+                type="checkbox"
+                checked={l.on}
+                onChange={(e) =>
+                  setOverrides((old) => ({ ...old, [l.id]: e.target.checked }))
+                }
+              />
+              {l.text}
+            </label>
+          ))}
+          <label className="field">
+            <span className="field-label">Add your own line</span>
             <input
-              type="checkbox"
-              checked={l.on}
-              onChange={(e) =>
-                setOverrides((old) => ({ ...old, [l.id]: e.target.checked }))
-              }
+              value={custom}
+              maxLength={160}
+              onChange={(e) => setCustom(e.target.value)}
+              placeholder="e.g. I need a place that accepts my dog."
             />
-            {l.text}
           </label>
-        ))}
-        <label className="field">
-          <span className="field-label">Add your own line</span>
-          <input
-            value={custom}
-            maxLength={160}
-            onChange={(e) => setCustom(e.target.value)}
-            placeholder="e.g. I need a place that accepts my dog."
-          />
-        </label>
-      </div>
-    </Modal>
+        </div>
+      </Modal>
+    </>
   );
 }
