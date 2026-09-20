@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import Icon from "./Icon";
+import LighthouseMark from "./LighthouseMark";
 import type { LocationState } from "@/lib/useCurrentLocation";
 export default function Header({
   onOpenAdmin,
@@ -18,9 +19,9 @@ export default function Header({
       <div className="header-inner">
         <Link className="brand" href="/" aria-label="Lighthouse home">
           <span className="brand-mark">
-            <Icon name="lighthouse" size={24} />
+            <LighthouseMark />
           </span>
-          Light<span>house</span>
+          Lighthouse
         </Link>
         <button
           className="region location-button"

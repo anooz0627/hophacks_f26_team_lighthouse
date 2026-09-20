@@ -59,13 +59,15 @@ export default function ListenButton({
     <div className="listen-row">
       <button
         type="button"
-        className="button button-small"
+        className="button button-small listen-control"
         onClick={toggle}
         disabled={state === "loading"}
         aria-pressed={state === "playing"}
+        aria-label={label}
+        title={label}
       >
         {state === "loading" ? <Spinner /> : <Icon name="speaker" size={16} />}
-        {label}
+        <span className="sr-only">{label}</span>
       </button>
       <span className="muted small">
         {state === "error"
