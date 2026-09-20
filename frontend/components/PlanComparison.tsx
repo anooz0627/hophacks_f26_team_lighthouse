@@ -18,18 +18,29 @@ export default function PlanComparison({
   note: string;
 }) {
   const routeCount = plans.filter((p) => p.resource_ids.length > 0).length;
+  const contactCount = new Set(
+    plans.flatMap((p) =>
+      (p.unrouted_resources ?? []).map((r) => r.resource_id),
+    ),
+  ).size;
   return (
     <section className="plan-comparison">
       <div className="section-kicker">
         <span className="step-number">03</span> YOUR OPTIONS
         <span className="options-count">
-          {routeCount} {routeCount === 1 ? "route" : "routes"}
+          {routeCount
+            ? `${routeCount} ${routeCount === 1 ? "route" : "routes"}`
+            : contactCount
+              ? `${contactCount} places`
+              : "0 routes"}
         </span>
       </div>
       <h2>
         {routeCount
           ? "Choose what works for you."
-          : "No route fits these details yet."}
+          : contactCount
+            ? "Places that may help."
+            : "No route fits these details yet."}
       </h2>
       {routeCount > 0 && (
         <fieldset className="strategy-options">
@@ -71,7 +82,7 @@ export default function PlanComparison({
           ))}
         </fieldset>
       )}
-      {note && (
+      {note && (routeCount > 0 || contactCount === 0) && (
         <p className="comparison-note">
           <Icon name="info" size={15} />
           {note}

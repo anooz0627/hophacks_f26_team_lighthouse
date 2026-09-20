@@ -6,7 +6,7 @@ import {
   timeLabel,
 } from "@/lib/format";
 import { ACCESSIBILITY } from "@/lib/constraints";
-import type { Resource, TravelMode } from "@/lib/types";
+import type { LatLng, Resource, TravelMode } from "@/lib/types";
 import Modal from "./Modal";
 import Icon from "./Icon";
 export function safeExternal(url: string | null): string | undefined {
@@ -20,8 +20,12 @@ export function safeExternal(url: string | null): string | undefined {
     return undefined;
   }
 }
-export function directionsUrl(r: Resource, mode?: TravelMode | null): string {
-  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(r.address)}&travelmode=${mode === "walk" ? "walking" : mode === "car" || mode === "rideshare" ? "driving" : "transit"}`;
+export function directionsUrl(
+  r: Resource,
+  mode?: TravelMode | null,
+  origin?: LatLng | null,
+): string {
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(r.address)}&travelmode=${mode === "walk" ? "walking" : mode === "car" || mode === "rideshare" ? "driving" : "transit"}${origin ? `&origin=${encodeURIComponent(`${origin.lat},${origin.lng}`)}` : ""}`;
 }
 export function eligibility(r: Resource): string {
   const e = r.eligibility;
@@ -40,10 +44,14 @@ export function ResourceActions({
   resource: r,
   mode,
   compact = false,
+  origin,
+  directionsLabel = "Directions",
 }: {
   resource: Resource;
   mode?: TravelMode | null;
   compact?: boolean;
+  origin?: LatLng | null;
+  directionsLabel?: string;
 }) {
   const website = safeExternal(r.website_url);
   const source =
@@ -63,12 +71,12 @@ export function ResourceActions({
       )}
       <a
         className="button button-small"
-        href={directionsUrl(r, mode)}
+        href={directionsUrl(r, mode, origin)}
         target="_blank"
         rel="noopener noreferrer"
       >
         <Icon name="pin" size={16} />
-        Directions
+        {directionsLabel}
       </a>
       {!compact && (
         <>
@@ -103,10 +111,12 @@ export default function ResourceDetails({
   resource: r,
   onClose,
   mode,
+  origin,
 }: {
   resource: Resource | null;
   onClose: () => void;
   mode?: TravelMode | null;
+  origin?: LatLng | null;
 }) {
   return (
     <Modal open={!!r} onClose={onClose} title={r?.name ?? "Resource details"}>
@@ -226,7 +236,7 @@ export default function ResourceDetails({
               </dd>
             </div>
           </dl>
-          <ResourceActions resource={r} mode={mode} />
+          <ResourceActions resource={r} mode={mode} origin={origin} />
         </div>
       )}
     </Modal>

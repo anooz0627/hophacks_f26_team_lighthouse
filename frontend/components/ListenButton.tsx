@@ -6,7 +6,13 @@ import { Spinner } from "./ui";
 
 type State = "idle" | "loading" | "playing" | "paused" | "error";
 
-export default function ListenButton({ planId }: { planId: string }) {
+export default function ListenButton({
+  planId,
+  contactsOnly = false,
+}: {
+  planId: string;
+  contactsOnly?: boolean;
+}) {
   const audio = useRef<HTMLAudioElement | null>(null);
   const [state, setState] = useState<State>("idle");
 
@@ -45,7 +51,9 @@ export default function ListenButton({ planId }: { planId: string }) {
         ? "Pause"
         : state === "paused"
           ? "Resume"
-          : "Listen to this plan";
+          : contactsOnly
+            ? "Listen to these places"
+            : "Listen to this plan";
 
   return (
     <div className="listen-row">
@@ -61,8 +69,10 @@ export default function ListenButton({ planId }: { planId: string }) {
       </button>
       <span className="muted small">
         {state === "error"
-          ? "Audio is unavailable right now. The written steps above are complete."
-          : "Hear every step read aloud, with times and what to bring."}
+          ? "Audio is unavailable right now. You can read the details on this page."
+          : contactsOnly
+            ? "Hear the places you can contact and what needs checking."
+            : "Hear every step read aloud, with times and what to bring."}
       </span>
     </div>
   );

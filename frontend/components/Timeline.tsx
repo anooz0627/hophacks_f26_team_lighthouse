@@ -78,6 +78,10 @@ export default function Timeline({
                   (s) =>
                     s.type === "travel" && s.resource_id === step.resource_id,
                 );
+                const firstPoint = travel?.polyline[0];
+                const origin = firstPoint
+                  ? { lat: firstPoint[0], lng: firstPoint[1] }
+                  : plan.constraints.constraints.current_location;
                 return (
                   <li
                     key={step.order}
@@ -180,7 +184,11 @@ export default function Timeline({
                               ))}
                             </div>
                           )}
-                          <ResourceActions resource={r} mode={travel?.mode} />
+                          <ResourceActions
+                            resource={r}
+                            mode={travel?.mode}
+                            origin={origin}
+                          />
                           <div className="step-footer">
                             <button
                               className="text-button"
@@ -217,6 +225,7 @@ export default function Timeline({
                               <ResourceActions
                                 resource={r}
                                 mode={step.mode ?? travel?.mode}
+                                origin={origin}
                                 compact
                               />
                             )}

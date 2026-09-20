@@ -7,6 +7,7 @@ import ConstraintFields from "@/components/ConstraintFields";
 import ConstraintsPanel from "@/components/ConstraintsPanel";
 import Header from "@/components/Header";
 import ListenButton from "@/components/ListenButton";
+import LocationEditor from "@/components/LocationEditor";
 import Icon from "@/components/Icon";
 import Modal from "@/components/Modal";
 import PlanComparison from "@/components/PlanComparison";
@@ -15,6 +16,7 @@ import ReplanBanner from "@/components/ReplanBanner";
 import ResourceDetails from "@/components/ResourceDetails";
 import SituationInput, { type Phase } from "@/components/SituationInput";
 import Timeline, { stepKey } from "@/components/Timeline";
+import UnroutedResources from "@/components/UnroutedResources";
 import { Spinner } from "@/components/ui";
 import {
   extract,
@@ -26,12 +28,8 @@ import {
   errorMessage,
 } from "@/lib/api";
 import { DEFAULT_CONSTRAINTS, emptyConstraints } from "@/lib/constraints";
-import {
-  demoNowIso,
-  formatUsd,
-  SERVICE_LABEL,
-  DEADLINE_LABEL,
-} from "@/lib/format";
+import { formatUsd, SERVICE_LABEL, DEADLINE_LABEL } from "@/lib/format";
+import useCurrentLocation from "@/lib/useCurrentLocation";
 import type {
   Constraints,
   Deadline,
@@ -48,7 +46,6 @@ const PlanMap = dynamic(() => import("@/components/PlanMap"), {
   ssr: false,
   loading: () => <p className="muted">Loading map…</p>,
 });
-const DEMO_NOW = demoNowIso();
 
 export default function Home() {
   const [text, setText] = useState("");
@@ -68,22 +65,31 @@ export default function Home() {
   const [detailId, setDetailId] = useState<string | null>(null);
   const [edit, setEdit] = useState<UserConstraints | null>(null);
   const [adminOpen, setAdminOpen] = useState(false);
+  const [locationOpen, setLocationOpen] = useState(false);
   const [adminBusyId, setAdminBusyId] = useState<string | null>(null);
   const [completed, setCompleted] = useState<Set<string>>(new Set());
   const [assistant, setAssistant] = useState<AssistantState>("idle");
   const [guideMessage, setGuideMessage] = useState<string | undefined>();
   const [invalidated, setInvalidated] = useState(false);
-  const [contextOpen, setContextOpen] = useState(false);
+  const [stage, setStage] = useState(0);
+  const [voiceBusy, setVoiceBusy] = useState(false);
+  const {
+    location,
+    retry: retryLocation,
+    selectAddress,
+  } = useCurrentLocation();
   const planColumn = useRef<HTMLDivElement>(null);
   const [showMap, setShowMap] = useState(true);
   const operation = useRef(false);
   const reviewHeading = useRef<HTMLHeadingElement>(null);
+  const previousStage = useRef(0);
   const plan =
     bundle?.plans.find((p) => p.plan_id === selected) ??
     bundle?.plans[0] ??
     null;
-  const busy = ["extracting", "planning", "replanning"].includes(phase);
-  const details = {
+  const busy =
+    voiceBusy || ["extracting", "planning", "replanning"].includes(phase);
+  const details = constraints ?? {
     ...emptyConstraints(),
     constraints: { ...DEFAULT_CONSTRAINTS, ...overrides },
     needs: needOverrides ?? [],
@@ -108,15 +114,21 @@ export default function Home() {
     };
   }, []);
   useEffect(() => {
-    if (phase === "review" || phase === "planned") {
+    if (previousStage.current === stage) return;
+    previousStage.current = stage;
+    if (stage === 0) {
+      document
+        .getElementById("situation-heading")
+        ?.focus({ preventScroll: true });
+    } else {
       reviewHeading.current?.focus({ preventScroll: true });
-      if (window.matchMedia("(max-width: 780px)").matches)
-        planColumn.current?.scrollIntoView({ block: "start" });
+      planColumn.current?.scrollIntoView({ block: "start" });
     }
-  }, [phase]);
+  }, [stage]);
 
   const setSituation = (value: string, example = false) => {
     setText(value);
+    setStage(0);
     setPhase("idle");
     setBundle(null);
     setConstraints(null);
@@ -132,7 +144,14 @@ export default function Home() {
     }
   };
   const understand = async () => {
-    if (operation.current || !text.trim()) return;
+    if (operation.current || voiceBusy || !text.trim()) return;
+    if (constraints) {
+      setStage(1);
+      setPhase("review");
+      setAssistant("warning");
+      setGuideMessage("Check your details before finding your options.");
+      return;
+    }
     operation.current = true;
     setPhase("extracting");
     setAssistant("understanding");
@@ -147,7 +166,13 @@ export default function Home() {
       setResourceError(null);
       const reviewed = {
         ...uc,
-        constraints: { ...uc.constraints, ...overrides },
+        constraints: {
+          ...uc.constraints,
+          ...overrides,
+          current_location: location.coordinates,
+          location_label:
+            location.address ?? location.label ?? "Current location",
+        },
         needs: (needOverrides ?? uc.needs).map((n) =>
           deadlineOverride &&
           (n.type !== "long_term_assistance" ||
@@ -157,7 +182,7 @@ export default function Home() {
         ),
       };
       setConstraints(reviewed);
-      setContextOpen(false);
+      setStage(1);
       setBundle(null);
       setCompleted(new Set());
       setPhase("review");
@@ -189,6 +214,7 @@ export default function Home() {
     setConstraints(active.constraints);
     setInvalidated(false);
     setPhase("planned");
+    setStage(2);
     setCompleted((old) =>
       previous
         ? new Set(active.steps.map(stepKey).filter((key) => old.has(key)))
@@ -198,7 +224,11 @@ export default function Home() {
     setGuideMessage(undefined);
   };
   const build = async (uc: UserConstraints, previous?: Plan) => {
-    if (operation.current) return;
+    if (operation.current || voiceBusy) return;
+    if (!location.coordinates) {
+      setError("Allow location access before finding your options.");
+      return;
+    }
     operation.current = true;
     setError(null);
     setPhase(previous ? "replanning" : "planning");
@@ -206,7 +236,19 @@ export default function Home() {
     setGuideMessage(undefined);
     try {
       const [next, list] = await Promise.all([
-        generatePlans(uc, DEMO_NOW, previous?.plan_id),
+        generatePlans(
+          {
+            ...uc,
+            constraints: {
+              ...uc.constraints,
+              current_location: location.coordinates,
+              location_label:
+                location.address ?? location.label ?? "Current location",
+            },
+          },
+          undefined,
+          previous?.plan_id,
+        ),
         getResources(),
       ]);
       setResources(list);
@@ -221,7 +263,7 @@ export default function Home() {
     }
   };
   const updateAvailability = async (id?: string, status?: ResourceStatus) => {
-    if (operation.current) return;
+    if (operation.current || voiceBusy) return;
     operation.current = true;
     setAdminBusyId(id ?? "reset");
     setResourceError(null);
@@ -246,7 +288,7 @@ export default function Home() {
       if (current) {
         const next = await generatePlans(
           current.constraints,
-          current.now,
+          undefined,
           current.plan_id,
         );
         acceptBundle(next, current);
@@ -287,7 +329,59 @@ export default function Home() {
         : undefined,
     );
   };
-  const stage = plan ? 2 : constraints ? 1 : 0;
+  const changeDetails = (patch: Partial<Constraints>) => {
+    setOverrides((old) => ({ ...old, ...patch }));
+    setConstraints((old) =>
+      old ? { ...old, constraints: { ...old.constraints, ...patch } } : null,
+    );
+    setBundle(null);
+    setCompleted(new Set());
+  };
+  const changeNeeds = (needs: Need[]) => {
+    setNeedOverrides(needs);
+    setConstraints((old) => (old ? { ...old, needs } : null));
+    setBundle(null);
+    setCompleted(new Set());
+  };
+  const navigate = (next: number) => {
+    if (busy || (next === 1 && !constraints) || (next === 2 && !plan)) return;
+    setStage(next);
+    setError(null);
+    setPhase(next === 0 ? "idle" : next === 1 ? "review" : "planned");
+    setAssistant(
+      next === 0
+        ? "idle"
+        : next === 1
+          ? "warning"
+          : plan?.feasible
+            ? "ready"
+            : "no-plan",
+    );
+    setGuideMessage(undefined);
+  };
+  const locationDetails = constraints
+    ? {
+        ...constraints,
+        constraints: {
+          ...constraints.constraints,
+          current_location: location.coordinates,
+          location_label:
+            location.address ?? location.label ?? "Current location",
+        },
+      }
+    : null;
+  const invalidateLocationPlan = () => {
+    setBundle(null);
+    setCompleted(new Set());
+    setInvalidated(false);
+    setError(null);
+    if (stage === 2) navigate(1);
+    setLocationOpen(false);
+  };
+  const refreshLocation = () => {
+    invalidateLocationPlan();
+    retryLocation();
+  };
   const completedCount =
     plan?.steps.filter((s) => s.type !== "note" && completed.has(stepKey(s)))
       .length ?? 0;
@@ -298,7 +392,12 @@ export default function Home() {
       <a className="skip-link" href="#main">
         Skip to planner
       </a>
-      <Header onOpenAdmin={() => setAdminOpen(true)} />
+      <Header
+        onOpenAdmin={() => setAdminOpen(true)}
+        location={location}
+        busy={busy}
+        onLocate={() => setLocationOpen(true)}
+      />
       <main id="main" className="main-shell">
         <div className="page-intro">
           <div>
@@ -306,17 +405,33 @@ export default function Home() {
             <h1>A clearer path to help.</h1>
             <p>Let’s turn what you need into what you can do next.</p>
           </div>
-          <div className="demo-clock">
-            <Icon name="clock" size={18} />
-            <div>
-              Sunday, September 20
-              <small>Demo starts at 6:00 PM · Baltimore time</small>
-            </div>
-          </div>
         </div>
-        <p className="mobile-demo-note">
-          Demo: September 20, 2026 · 6:00 PM Baltimore time
-        </p>
+        <div
+          className={`location-status location-${location.status}`}
+          id="location-status"
+          role="status"
+        >
+          <Icon name="pin" size={18} />
+          <p>{location.message}</p>
+          {location.status === "error" && (
+            <button
+              className="text-button"
+              onClick={refreshLocation}
+              disabled={busy}
+            >
+              Try again
+            </button>
+          )}
+          {location.status === "error" && (
+            <button
+              className="text-button"
+              onClick={() => setLocationOpen(true)}
+              disabled={busy}
+            >
+              Use another address instead
+            </button>
+          )}
+        </div>
         <ol className="journey" aria-label="Planning progress">
           {["Your situation", "Review your details", "Your action plan"].map(
             (label, i) => (
@@ -325,63 +440,85 @@ export default function Home() {
                 className={i === stage ? "current" : i < stage ? "passed" : ""}
                 aria-current={i === stage ? "step" : undefined}
               >
-                <span>
-                  {i < stage ? <Icon name="check" size={14} /> : `0${i + 1}`}
-                </span>
-                {label}
+                <button
+                  type="button"
+                  onClick={() => navigate(i)}
+                  disabled={
+                    busy || (i === 1 && !constraints) || (i === 2 && !plan)
+                  }
+                  aria-current={i === stage ? "step" : undefined}
+                >
+                  <span>
+                    {i < stage ? <Icon name="check" size={14} /> : `0${i + 1}`}
+                  </span>
+                  {label}
+                </button>
                 {i < 2 && <div className="journey-line" />}
               </li>
             ),
           )}
         </ol>
-        <div className={`planner-layout ${constraints ? "has-context" : ""}`}>
-          <div className="context-column">
-            {constraints && (
+        <div
+          className={`planner-layout planner-flow ${stage === 0 ? "situation-flow" : ""}`}
+        >
+          <div className="plan-column" ref={planColumn}>
+            {stage > 0 && (
               <button
-                className="mobile-context-toggle"
-                onClick={() => setContextOpen(!contextOpen)}
-                aria-expanded={contextOpen}
-                aria-controls="situation-details"
+                type="button"
+                className="button button-quiet back-button"
+                disabled={busy}
+                onClick={() => navigate(stage - 1)}
               >
-                <Icon name="edit" size={17} />
-                {contextOpen
-                  ? "Hide situation & details"
-                  : "Your situation & details"}
-                <Icon name="chevron" size={17} />
+                <Icon name="back" size={18} /> Back to{" "}
+                {stage === 1 ? "your situation" : "review your details"}
               </button>
             )}
-            <div
-              id="situation-details"
-              className={`context-content ${contextOpen ? "expanded" : ""}`}
-            >
+            {stage === 0 && (
               <SituationInput
                 text={text}
                 onTextChange={setSituation}
                 phase={phase}
-                error={!constraints ? error : null}
+                error={error}
                 onSubmit={() => void understand()}
                 details={details}
-                onPatch={(patch) =>
-                  setOverrides((old) => ({ ...old, ...patch }))
-                }
-                onNeeds={setNeedOverrides}
-                onDeadline={setDeadlineOverride}
+                onPatch={changeDetails}
+                onNeeds={changeNeeds}
+                onDeadline={(deadline) => {
+                  setDeadlineOverride(deadline);
+                  if (constraints)
+                    changeNeeds(
+                      constraints.needs.map((need) =>
+                        need.type !== "long_term_assistance" ||
+                        constraints.needs.length === 1
+                          ? { ...need, deadline }
+                          : need,
+                      ),
+                    );
+                }}
                 deadlineValue={deadlineOverride}
+                voiceAvailable={!!health?.voice}
+                voiceBusy={voiceBusy}
+                onVoiceBusy={setVoiceBusy}
+                onTranscript={(transcript) => {
+                  const next = [text.trim(), transcript.trim()]
+                    .filter(Boolean)
+                    .join(" ");
+                  if (next.length > 10000)
+                    throw new Error(
+                      "There isn’t enough room for this recording. Shorten your text and try again.",
+                    );
+                  setSituation(next);
+                }}
               />
-              {constraints && phase !== "review" && (
-                <ConstraintsPanel
-                  constraints={constraints}
-                  onEdit={() => {
-                    if (!busy) setEdit(structuredClone(constraints));
-                  }}
-                />
-              )}
-            </div>
-          </div>
-          <div className="plan-column" ref={planColumn}>
+            )}
             <Assistant
               state={assistant}
-              message={guideMessage}
+              message={
+                guideMessage ??
+                (stage === 2 && plan?.unrouted_resources?.length
+                  ? "There are places you can contact. Check travel, opening hours and availability before going."
+                  : undefined)
+              }
               reviewing={phase === "review" && !error}
             />
             {resourceError && !adminOpen && (
@@ -402,7 +539,7 @@ export default function Home() {
                 </button>
               </div>
             )}
-            {!constraints && (
+            {stage === 0 && (
               <section className="empty-plan">
                 <div className="empty-label">
                   <Icon name="route" size={18} />
@@ -451,14 +588,17 @@ export default function Home() {
                 </div>
               </section>
             )}
-            {constraints && !plan && (
+            {stage === 1 && constraints && (
               <section className="review-area">
                 <h2 ref={reviewHeading} tabIndex={-1} className="sr-only">
                   Review your details
                 </h2>
                 <ConstraintsPanel
-                  constraints={constraints}
+                  constraints={locationDetails!}
                   reviewing
+                  onEditLocation={() => {
+                    if (!busy) setLocationOpen(true);
+                  }}
                   onEdit={() => {
                     if (!busy) setEdit(structuredClone(constraints));
                   }}
@@ -472,16 +612,25 @@ export default function Home() {
                   <p>You can change these at any time.</p>
                   <button
                     className="button button-primary"
-                    disabled={busy || !constraints.needs.length}
-                    onClick={() => void build(constraints)}
+                    disabled={
+                      busy || !constraints.needs.length || !location.coordinates
+                    }
+                    onClick={() =>
+                      plan && !invalidated
+                        ? navigate(2)
+                        : void build(constraints)
+                    }
                   >
-                    {busy ? <Spinner /> : null}Find My Options
+                    {busy ? <Spinner /> : null}
+                    {plan && !invalidated
+                      ? "Return to my plan"
+                      : "Find My Options"}
                     <Icon name="arrow" />
                   </button>
                 </div>
               </section>
             )}
-            {plan && (
+            {stage === 2 && plan && (
               <>
                 <h2 ref={reviewHeading} tabIndex={-1} className="sr-only">
                   Your action plan
@@ -549,69 +698,90 @@ export default function Home() {
                       }}
                     />
                     {health?.voice && (
-                      <ListenButton key={plan.plan_id} planId={plan.plan_id} />
+                      <ListenButton
+                        key={plan.plan_id}
+                        planId={plan.plan_id}
+                        contactsOnly={
+                          !plan.resource_ids.length &&
+                          !!plan.unrouted_resources?.length
+                        }
+                      />
                     )}
-                    <div className="plan-overview">
-                      <div>
-                        <span>Estimated total</span>
-                        <strong>
-                          {formatUsd(plan.total_cost_usd)}
-                          <small>
-                            {plan.constraints.constraints.budget_usd !== null
-                              ? ` / $${plan.constraints.constraints.budget_usd} budget`
-                              : " · budget not specified"}
-                          </small>
-                        </strong>
-                      </div>
-                      <div>
-                        <span>Total travel</span>
-                        <strong>
-                          {plan.total_travel_min}
-                          <small> minutes</small>
-                        </strong>
-                      </div>
-                      <div>
-                        <span>Your progress</span>
-                        <strong>
-                          {completedCount}
-                          <small> / {actionableCount} steps</small>
-                        </strong>
-                      </div>
-                    </div>
-                    <section className="map-section">
-                      <button
-                        className="map-toggle"
-                        onClick={() => setShowMap(!showMap)}
-                        aria-expanded={showMap}
-                      >
-                        <Icon name="pin" size={18} />
-                        {showMap ? "Hide" : "Show"} route overview
-                        <Icon name="chevron" size={17} />
-                      </button>
-                      {showMap && (
-                        <>
-                          <p className="small muted">
-                            OpenStreetMap base map. Lines are approximate demo
-                            connections, not turn-by-turn routes. Use Directions
-                            for navigation.
-                          </p>
-                          <PlanMap
-                            plan={plan}
-                            resources={resources}
-                            previousPlan={null}
-                          />
-                        </>
-                      )}
-                    </section>
-                    <Timeline
+                    <UnroutedResources
                       plan={plan}
                       resources={resources}
-                      updating={false}
-                      highlightIds={bundle?.diff?.added_resource_ids ?? []}
-                      completed={completed}
-                      onComplete={completeStep}
-                      onDetails={(r) => setDetailId(r.id)}
+                      onDetails={(resource) => setDetailId(resource.id)}
+                      onEditLocation={() => setLocationOpen(true)}
+                      onEditDetails={() =>
+                        setEdit(structuredClone(plan.constraints))
+                      }
                     />
+                    {plan.resource_ids.length > 0 && (
+                      <>
+                        <div className="plan-overview">
+                          <div>
+                            <span>Estimated total</span>
+                            <strong>
+                              {formatUsd(plan.total_cost_usd)}
+                              <small>
+                                {plan.constraints.constraints.budget_usd !==
+                                null
+                                  ? ` / $${plan.constraints.constraints.budget_usd} budget`
+                                  : " · budget not specified"}
+                              </small>
+                            </strong>
+                          </div>
+                          <div>
+                            <span>Total travel</span>
+                            <strong>
+                              {plan.total_travel_min}
+                              <small> minutes</small>
+                            </strong>
+                          </div>
+                          <div>
+                            <span>Your progress</span>
+                            <strong>
+                              {completedCount}
+                              <small> / {actionableCount} steps</small>
+                            </strong>
+                          </div>
+                        </div>
+                        <section className="map-section">
+                          <button
+                            className="map-toggle"
+                            onClick={() => setShowMap(!showMap)}
+                            aria-expanded={showMap}
+                          >
+                            <Icon name="pin" size={18} />
+                            {showMap ? "Hide" : "Show"} route overview
+                            <Icon name="chevron" size={17} />
+                          </button>
+                          {showMap && (
+                            <>
+                              <p className="small muted">
+                                OpenStreetMap base map. Lines are approximate
+                                demo connections, not turn-by-turn routes. Use
+                                Directions for navigation.
+                              </p>
+                              <PlanMap
+                                plan={plan}
+                                resources={resources}
+                                previousPlan={null}
+                              />
+                            </>
+                          )}
+                        </section>
+                        <Timeline
+                          plan={plan}
+                          resources={resources}
+                          updating={false}
+                          highlightIds={bundle?.diff?.added_resource_ids ?? []}
+                          completed={completed}
+                          onComplete={completeStep}
+                          onDetails={(r) => setDetailId(r.id)}
+                        />
+                      </>
+                    )}
                     <RejectedPanel rejected={plan.rejected} />
                   </>
                 )}
@@ -625,6 +795,16 @@ export default function Home() {
           <span>Baltimore · Hackathon prototype</span>
         </footer>
       </main>
+      <LocationEditor
+        open={locationOpen}
+        location={location}
+        onClose={() => setLocationOpen(false)}
+        onUseCurrent={refreshLocation}
+        onSelect={(match) => {
+          invalidateLocationPlan();
+          selectAddress(match);
+        }}
+      />
       <Modal
         open={!!edit}
         onClose={() => setEdit(null)}
@@ -637,10 +817,31 @@ export default function Home() {
               const updated = edit;
               setEdit(null);
               setConstraints(updated);
-              setBundle(null);
-              setCompleted(new Set());
+              const changed =
+                JSON.stringify(updated) !== JSON.stringify(constraints);
+              if (changed) {
+                setBundle(null);
+                setCompleted(new Set());
+                const changedFields = Object.fromEntries(
+                  Object.entries(updated.constraints).filter(
+                    ([key, value]) =>
+                      JSON.stringify(value) !==
+                      JSON.stringify(
+                        constraints?.constraints[key as keyof Constraints],
+                      ),
+                  ),
+                );
+                setOverrides((old) => ({ ...old, ...changedFields }));
+                if (
+                  JSON.stringify(updated.needs) !==
+                  JSON.stringify(constraints?.needs)
+                ) {
+                  setNeedOverrides(updated.needs);
+                  setDeadlineOverride(undefined);
+                }
+              }
               setPhase("review");
-              setContextOpen(false);
+              setStage(1);
               setError(null);
               setAssistant("warning");
               setGuideMessage(
@@ -749,6 +950,9 @@ export default function Home() {
       </Modal>
       <ResourceDetails
         resource={resources.find((r) => r.id === detailId) ?? null}
+        origin={
+          plan?.constraints.constraints.current_location ?? location.coordinates
+        }
         onClose={() => setDetailId(null)}
         mode={
           plan?.steps.find(

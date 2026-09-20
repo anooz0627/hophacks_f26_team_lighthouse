@@ -106,13 +106,15 @@ class Constraints(BaseModel):
     has_id: Optional[bool] = None
     family_size: int = Field(default=1, ge=1, le=20)
     children: bool = False
+    other_household_members: bool = False
     pets: bool = False
     accessibility: list[Literal["step_free", "limited_walking", "hearing_support"]] = Field(default_factory=list)
     transport: Literal["no_vehicle", "public_transit", "walking", "rideshare", "own_vehicle"] = "no_vehicle"
     transportation_needed: bool = False
-    location_label: str = "Lexington Market"
+    location_label: str = "Current location"
     custom_deadline: Optional[datetime] = None
-    gender: Optional[Literal["male", "female"]] = None
+    gender: Optional[Literal["male", "female", "non_binary", "self_describe", "prefer_not_to_say"]] = None
+    gender_description: Optional[str] = Field(default=None, max_length=80)
     current_location: Optional[LatLng] = None
     start_time: Optional[datetime] = None
 
@@ -176,6 +178,13 @@ class PlanGraph(BaseModel):
     edges: list[GraphEdge]
 
 
+class UnroutedResource(BaseModel):
+    resource_id: str
+    distance_km: float
+    reason: str
+    warnings: list[str] = Field(default_factory=list)
+
+
 class Plan(BaseModel):
     plan_id: str
     strategy: Strategy = "recommended"
@@ -192,6 +201,7 @@ class Plan(BaseModel):
     unmet_needs: list[ServiceType] = Field(default_factory=list)
     explanation: str = ""
     rejected: list[RejectedResource] = Field(default_factory=list)
+    unrouted_resources: list[UnroutedResource] = Field(default_factory=list)
     graph: PlanGraph
 
 

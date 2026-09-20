@@ -6,12 +6,13 @@ from typing import Optional
 from zoneinfo import ZoneInfo
 
 from ..explain import template
-from ..models import (LatLng, Plan, PlanBundle, PlanDiff, RejectedResource, Strategy, UserConstraints)
+from ..models import (LatLng, Plan, PlanBundle, PlanDiff, RejectedResource, Strategy, UnroutedResource, UserConstraints)
 from ..store import store
 from .filters import apply_filters
 from .graph import build_plan_graph, build_travel_graph
 from .search import local_time, search
 from .timeline import build_timeline
+from .travel import haversine_km
 
 STRATEGIES: tuple[Strategy, ...] = ("recommended", "fastest", "lowest_cost")
 STRATEGY_LABEL = {"fastest": "Fastest", "lowest_cost": "Lowest cost"}
@@ -42,6 +43,14 @@ def make_plan(uc: UserConstraints, now: Optional[datetime] = None, origin: Optio
         if r and rid not in selected:
             rejected.append(RejectedResource(resource_id=rid, name=r.name, service=r.service, reason=reason))
     graph = build_plan_graph(uc, fr.eligible, rejected, selected, legs, store.resources)
+    unrouted = [UnroutedResource(
+        resource_id=r.id,
+        distance_km=round(haversine_km((origin.lat, origin.lng), (r.lat, r.lng)), 1),
+        reason="Travel time and cost are not confirmed for your starting point and travel preferences.",
+        warnings=fr.warnings.get(r.id, []),
+    ) for r in fr.eligible if r.service in result.unmet
+        and result.rejections.get(r.id) == "no route fits your transportation or walking limits"]
+    unrouted.sort(key=lambda item: (item.distance_km, item.resource_id))
 
     return Plan(
         plan_id=str(uuid.uuid4()),
@@ -58,6 +67,7 @@ def make_plan(uc: UserConstraints, now: Optional[datetime] = None, origin: Optio
         unmet_needs=result.unmet,
         explanation=explanation,
         rejected=rejected,
+        unrouted_resources=unrouted,
         graph=graph,
     )
 
@@ -84,6 +94,7 @@ def _tradeoff(plan: Plan, reference: Optional[Plan]) -> str:
 
 def make_bundle(uc: UserConstraints, now: Optional[datetime] = None,
                 previous_plan_id: Optional[str] = None) -> PlanBundle:
+    now = now or datetime.now(ZoneInfo("America/New_York"))
     plans: list[Plan] = []
     signatures: set = set()
     skipped: list[str] = []

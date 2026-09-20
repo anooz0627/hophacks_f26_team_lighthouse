@@ -1,7 +1,18 @@
 "use client";
 import Link from "next/link";
 import Icon from "./Icon";
-export default function Header({ onOpenAdmin }: { onOpenAdmin: () => void }) {
+import type { LocationState } from "@/lib/useCurrentLocation";
+export default function Header({
+  onOpenAdmin,
+  location,
+  onLocate,
+  busy,
+}: {
+  onOpenAdmin: () => void;
+  location: LocationState;
+  onLocate: () => void;
+  busy: boolean;
+}) {
   return (
     <header className="site-header">
       <div className="header-inner">
@@ -11,11 +22,27 @@ export default function Header({ onOpenAdmin }: { onOpenAdmin: () => void }) {
           </span>
           Aid<span>Graph</span>
         </Link>
-        <span className="region">
-          <Icon name="pin" size={16} /> Baltimore, Maryland
-        </span>
+        <button
+          className="region location-button"
+          onClick={onLocate}
+          disabled={busy}
+          aria-haspopup="dialog"
+          title="Change starting location"
+          aria-describedby="location-status"
+        >
+          <Icon name="pin" size={16} />
+          {location.status === "ready"
+            ? (location.label ?? "Finding your postal code…")
+            : location.status === "locating"
+              ? "Finding your location…"
+              : "Retry location"}
+        </button>
         <div className="header-actions">
-          <button className="button button-quiet" onClick={onOpenAdmin}>
+          <button
+            className="button button-quiet"
+            onClick={onOpenAdmin}
+            disabled={busy}
+          >
             <Icon name="settings" size={17} />
             <span>Availability</span>
           </button>

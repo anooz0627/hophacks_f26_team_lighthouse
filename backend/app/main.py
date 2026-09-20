@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .llm_client import llm_enabled
 from .models import Health
-from .routers import plan, resources
+from .routers import location, plan, resources, speech
 from .store import store
 from .voice import voice_enabled
 
@@ -17,6 +17,8 @@ app.add_middleware(
 )
 app.include_router(plan.router)
 app.include_router(resources.router)
+app.include_router(speech.router)
+app.include_router(location.router)
 
 
 @app.get("/health", response_model=Health)

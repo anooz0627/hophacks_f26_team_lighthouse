@@ -21,13 +21,14 @@ class Extraction(BaseModel):
     has_car: bool = Field(default=False, description="True only if they clearly have a car they can use.")
     has_id: Optional[bool] = Field(default=None, description="True/false only if they said so; otherwise null.")
     family_size: int = Field(default=1, description="Number of people who need help together, including the speaker.")
-    gender: Optional[Literal["male", "female"]] = Field(default=None, description="Only if clearly stated; otherwise null.")
+    gender: Optional[Literal["male", "female", "non_binary", "self_describe", "prefer_not_to_say"]] = Field(default=None, description="Only if clearly stated; otherwise null.")
 
 
 SYSTEM = """You extract structured needs and constraints from a short description written by or for a person seeking community assistance.
 
 Rules:
 - Output only the fields in the schema. Do not invent facts. Unknown means null.
+- Input may be a speech transcript. Number words are numbers: "I'm nineteen, I have ten dollars" means age 19 and budget_usd 10.
 - Needs: emergency_housing = needs a place to sleep soon. food = hungry / no food. long_term_assistance = wants stable housing, benefits, rent help, case management, ID replacement.
 - If someone lost their housing or has nowhere to sleep, add emergency_housing (priority high, deadline tonight) AND long_term_assistance (priority low, deadline this_week).
 - 'tonight' means they need it within hours. 'tomorrow' for next-day. 'this_week' otherwise.

@@ -12,7 +12,12 @@ export type Deadline =
   | "this_week"
   | "within_24_hours"
   | "custom";
-export type Gender = "male" | "female";
+export type Gender =
+  | "male"
+  | "female"
+  | "non_binary"
+  | "self_describe"
+  | "prefer_not_to_say";
 export interface HoursWindow {
   days: string[];
   open: string;
@@ -22,7 +27,7 @@ export interface Eligibility {
   min_age: number | null;
   max_age: number | null;
   requires_id: boolean;
-  gender: Gender | null;
+  gender: "male" | "female" | null;
   families_ok: boolean;
   children_ok: boolean | null;
   pets_ok: boolean | null;
@@ -78,6 +83,11 @@ export interface LatLng {
   lat: number;
   lng: number;
 }
+export interface AddressMatch {
+  address: string;
+  label: string;
+  coordinates: LatLng;
+}
 export interface Constraints {
   age: number | null;
   budget_usd: number | null;
@@ -85,6 +95,7 @@ export interface Constraints {
   has_id: boolean | null;
   family_size: number;
   children: boolean;
+  other_household_members?: boolean;
   pets: boolean;
   accessibility: ("step_free" | "limited_walking" | "hearing_support")[];
   transport:
@@ -97,6 +108,7 @@ export interface Constraints {
   location_label: string;
   custom_deadline: string | null;
   gender: Gender | null;
+  gender_description?: string | null;
   current_location: LatLng | null;
   start_time: string | null;
 }
@@ -157,6 +169,12 @@ export interface PlanGraph {
   edges: GraphEdge[];
 }
 export type Strategy = "recommended" | "fastest" | "lowest_cost";
+export interface UnroutedResource {
+  resource_id: string;
+  distance_km: number;
+  reason: string;
+  warnings: string[];
+}
 export interface Plan {
   strategy: Strategy;
   tradeoff: string;
@@ -173,6 +191,7 @@ export interface Plan {
   unmet_needs: ServiceType[];
   explanation: string;
   rejected: RejectedResource[];
+  unrouted_resources?: UnroutedResource[];
   graph: PlanGraph;
 }
 export interface PlanDiff {

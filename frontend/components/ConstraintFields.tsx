@@ -2,7 +2,8 @@
 import { useId } from "react";
 import {
   ACCESSIBILITY,
-  NEIGHBORHOODS,
+  GENDERS,
+  SUPPORT_DETAILS,
   TRANSPORT,
   needFor,
 } from "@/lib/constraints";
@@ -32,6 +33,9 @@ export default function ConstraintFields({
 }) {
   const id = useId();
   const c = value.constraints;
+  const otherMembers =
+    c.other_household_members ?? (!c.children && c.family_size > 1);
+  const minimumPeople = 1 + Number(c.children) + Number(otherMembers);
   const toggleNeed = (type: ServiceType) =>
     onNeeds(
       value.needs.some((n) => n.type === type)
@@ -115,45 +119,6 @@ export default function ConstraintFields({
           />
         </label>
       </div>
-      <label className="field" htmlFor={`${id}-location`}>
-        Starting neighborhood
-        <select
-          id={`${id}-location`}
-          value={c.location_label}
-          onChange={(e) =>
-            onPatch({
-              location_label: e.target.value,
-              current_location: NEIGHBORHOODS[e.target.value],
-            })
-          }
-        >
-          {Object.keys(NEIGHBORHOODS).map((name) => (
-            <option key={name}>{name}</option>
-          ))}
-        </select>
-        <span className="field-hint">
-          Uses a neighborhood starting point, not your precise address.
-        </span>
-      </label>
-      <label className="field" htmlFor={`${id}-transport`}>
-        Transportation access
-        <select
-          id={`${id}-transport`}
-          value={c.transport}
-          onChange={(e) =>
-            onPatch({
-              transport: e.target.value as Constraints["transport"],
-              has_car: e.target.value === "own_vehicle",
-            })
-          }
-        >
-          {Object.entries(TRANSPORT).map(([key, label]) => (
-            <option key={key} value={key}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </label>
       <fieldset className="field">
         <legend className="field-label">Do you have photo ID?</legend>
         <div className="segmented">
@@ -221,10 +186,33 @@ export default function ConstraintFields({
           />
         </label>
       )}
-      <fieldset className="field">
-        <legend className="field-label">Accessibility</legend>
+      <fieldset className="support-fields">
+        <legend>Getting there &amp; support</legend>
+        <label className="field" htmlFor={`${id}-transport`}>
+          How will you get there?
+          <select
+            id={`${id}-transport`}
+            value={c.transport}
+            onChange={(e) =>
+              onPatch({
+                transport: e.target.value as Constraints["transport"],
+                has_car: e.target.value === "own_vehicle",
+              })
+            }
+          >
+            {Object.entries(TRANSPORT).map(([key, label]) => (
+              <option key={key} value={key}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <p className="field-hint">
+          Choose what would make the trip work for you. These choices affect
+          which routes and places we can include.
+        </p>
         {Object.entries(ACCESSIBILITY).map(([key, label]) => (
-          <label className="check-field" key={key}>
+          <label className="support-option" key={key}>
             <input
               type="checkbox"
               checked={c.accessibility.includes(
@@ -238,9 +226,18 @@ export default function ConstraintFields({
                 })
               }
             />
-            {label}
+            <span>
+              <strong>{label}</strong>
+              <small>
+                {SUPPORT_DETAILS[key as keyof typeof SUPPORT_DETAILS]}
+              </small>
+            </span>
           </label>
         ))}
+        <p className="field-hint">
+          Some providers haven’t confirmed their access information. If we can’t
+          find a match, we’ll show what needs checking.
+        </p>
       </fieldset>
       <fieldset className="field">
         <legend className="field-label">Who is coming with you?</legend>
@@ -251,9 +248,12 @@ export default function ConstraintFields({
             onChange={(e) =>
               onPatch({
                 children: e.target.checked,
+                other_household_members: otherMembers,
                 family_size: e.target.checked
-                  ? Math.max(2, c.family_size)
-                  : c.family_size,
+                  ? Math.max(minimumPeople + 1, Math.min(20, c.family_size + 1))
+                  : otherMembers
+                    ? Math.max(2, c.family_size - 1)
+                    : 1,
               })
             }
           />
@@ -262,13 +262,14 @@ export default function ConstraintFields({
         <label className="check-field">
           <input
             type="checkbox"
-            checked={c.family_size > (c.children ? 2 : 1)}
+            checked={otherMembers}
             onChange={(e) =>
               onPatch({
+                other_household_members: e.target.checked,
                 family_size: e.target.checked
-                  ? Math.max(c.children ? 3 : 2, c.family_size)
+                  ? Math.max(minimumPeople + 1, Math.min(20, c.family_size + 1))
                   : c.children
-                    ? 2
+                    ? Math.max(2, c.family_size - 1)
                     : 1,
               })
             }
@@ -287,7 +288,7 @@ export default function ConstraintFields({
           Total people, including you
           <input
             type="number"
-            min={c.children ? 2 : 1}
+            min={minimumPeople}
             max="20"
             value={c.family_size}
             onChange={(e) => onPatch({ family_size: Number(e.target.value) })}
@@ -295,24 +296,40 @@ export default function ConstraintFields({
         </label>
       </fieldset>
       <label className="field">
-        Gender eligibility (optional)
+        Gender (optional)
         <select
           value={c.gender ?? ""}
           onChange={(e) =>
             onPatch({
               gender: (e.target.value || null) as Constraints["gender"],
+              gender_description: null,
             })
           }
         >
           <option value="">Not specified</option>
-          <option value="female">Woman</option>
-          <option value="male">Man</option>
+          {Object.entries(GENDERS).map(([key, label]) => (
+            <option key={key} value={key}>
+              {label}
+            </option>
+          ))}
         </select>
         <span className="field-hint">
           <Icon name="info" size={14} /> Only used to check services with a
           stated restriction.
         </span>
       </label>
+      {c.gender === "self_describe" && (
+        <label className="field">
+          How do you describe your gender? (optional)
+          <input
+            maxLength={80}
+            value={c.gender_description ?? ""}
+            onChange={(e) =>
+              onPatch({ gender_description: e.target.value || null })
+            }
+          />
+        </label>
+      )}
     </fieldset>
   );
 }

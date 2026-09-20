@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import re
+import unicodedata
 
 from ..models import Constraints, LatLng, Need, ServiceType, UserConstraints
+from .numbers import AGE, MONEY, stated_number
 
 HOUSING = re.compile(r"\b(nowhere to (stay|sleep|go)|no ?where to stay|place to (stay|sleep)|somewhere to (stay|sleep)|"
                      r"shelter|homeless|lost my (housing|apartment|home|place)|evicted|kicked out|sleep tonight|"
@@ -15,8 +17,6 @@ NO_CAR = re.compile(r"\b(no car|(?:don'?t|doesn'?t|do not|does not|dont|doesnt) 
 HAS_CAR = re.compile(r"\b(have a car|my car|i can drive|i drive)\b", re.I)
 NO_ID = re.compile(r"\b(no id|don'?t have (an |my )?id|lost my (id|wallet|license)|no identification|without id)\b", re.I)
 HAS_ID = re.compile(r"\b(have (my|an|a photo|photo) id|have my license|got my id)\b", re.I)
-AGE = re.compile(r"\b(?:i'?m|i am|age|aged)\s*(\d{1,3})\b|\b(\d{1,3})\s*(?:years? old|yo|y/o)\b", re.I)
-MONEY = re.compile(r"\$\s?(-?\d[\d,]*(?:\.\d+)?)|(-?\d[\d,]*(?:\.\d+)?)\s*(?:dollars|bucks)", re.I)
 NO_MONEY = re.compile(r"\b(no money|broke|nothing in my pocket|no cash|can'?t afford anything)\b", re.I)
 FAMILY = re.compile(r"\b(my (?:\w+ )?(kids?|children|son|daughter|baby|wife|husband|partner|family))\b", re.I)
 KIDS_COUNT = re.compile(r"\b(\d|one|two|three|four|five)\s*(kids?|children)\b", re.I)
@@ -36,7 +36,7 @@ NEIGHBORHOODS = {
 
 
 def extract(text: str) -> UserConstraints:
-    t = text.strip().replace("’", "'")
+    t = unicodedata.normalize("NFKC", text.strip()).replace("’", "'").replace("‘", "'")
     needs: list[Need] = []
 
     if HOUSING.search(t):
@@ -49,16 +49,9 @@ def extract(text: str) -> UserConstraints:
         needs = [Need(type=ServiceType.emergency_housing, priority="high", deadline="tonight"),
                  Need(type=ServiceType.food, priority="medium", deadline="tonight")]
 
-    age = None
-    m = AGE.search(t)
-    if m:
-        age = int(m.group(1) or m.group(2))
-
-    budget = None
-    m = MONEY.search(t)
-    if m:
-        budget = float((m.group(1) or m.group(2)).replace(",", ""))
-    elif NO_MONEY.search(t):
+    age = stated_number(AGE, t)
+    budget = stated_number(MONEY, t)
+    if budget is None and NO_MONEY.search(t):
         budget = 0.0
 
     has_car = False
@@ -121,6 +114,7 @@ def extract(text: str) -> UserConstraints:
         needs=needs,
         constraints=Constraints(age=age, budget_usd=budget, has_car=has_car, has_id=has_id,
                                 family_size=family_size, gender=gender, children=children, pets=pets,
+                                other_household_members=partner or (not children and family_size > 1),
                                 accessibility=accessibility, transport=transport, transportation_needed=not has_car,
                                 location_label=label, current_location=LatLng(lat=lat, lng=lng)),
         raw_text=t,

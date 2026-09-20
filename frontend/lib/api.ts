@@ -1,5 +1,7 @@
 import type {
   ExtractRequest,
+  AddressMatch,
+  LatLng,
   PlanBundle,
   Health,
   Plan,
@@ -99,6 +101,21 @@ export function resetResources(): Promise<Resource[]> {
 export function getHealth(): Promise<Health> {
   return request<Health>("/health");
 }
+export function getLocationLabel(
+  coordinates: LatLng,
+): Promise<{ label: string | null }> {
+  return post("/location/label", coordinates);
+}
+export function searchAddresses(
+  query: string,
+  signal: AbortSignal,
+): Promise<AddressMatch[]> {
+  return request("/location/search", {
+    method: "POST",
+    body: JSON.stringify({ query }),
+    signal: AbortSignal.any([signal, AbortSignal.timeout(20000)]),
+  });
+}
 export function planAudioUrl(planId: string): string {
   return `${API_BASE}/plans/${encodeURIComponent(planId)}/audio`;
 }
@@ -109,8 +126,28 @@ export function errorMessage(err: unknown): string {
 }
 export function generatePlans(
   constraints: UserConstraints,
-  now: string,
+  now?: string,
   previous_plan_id?: string,
 ): Promise<PlanBundle> {
   return post("/plans", { constraints, now, previous_plan_id });
+}
+
+export async function transcribeAudio(
+  audio: Blob,
+  signal: AbortSignal,
+): Promise<string> {
+  const response = await fetch(`${API_BASE}/speech/transcribe`, {
+    method: "POST",
+    headers: { "content-type": audio.type },
+    body: audio,
+    signal: AbortSignal.any([signal, AbortSignal.timeout(45000)]),
+  });
+  if (!response.ok) {
+    throw new ApiError(
+      response.status,
+      describeErrorBody(await response.text()),
+    );
+  }
+  const result = await response.json();
+  return result.text;
 }

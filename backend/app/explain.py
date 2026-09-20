@@ -21,7 +21,9 @@ def template(plan: Plan) -> str:
     visits = [s for s in plan.steps if s.type == "visit"]
     tonight = [s for s in visits if s.day_label == "tonight"]
     if not visits:
-        return "No matching route was found in this demo dataset. Try adjusting your details or contact 211 for real local options."
+        if plan.unrouted_resources:
+            return "Places are listed for you to contact, but a route is not confirmed. Check travel time, fare, opening hours and availability before leaving."
+        return "No matching route was found. Review the reasons, adjust your details, or contact 211 for more options."
     if not plan.feasible:
         return "This is a partial plan. Some needs could not be scheduled; review the missing needs before traveling."
     parts = []
@@ -38,6 +40,8 @@ def template(plan: Plan) -> str:
 
 
 def summarize(plan: Plan) -> str:
+    if plan.unrouted_resources and not plan.resource_ids:
+        return template(plan)
     if get_client() is None:
         return template(plan)
     key = f"{plan.plan_id}:{len(plan.steps)}"

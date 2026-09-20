@@ -57,7 +57,7 @@ def apply_filters(resources: list[Resource], uc: UserConstraints) -> FilterResul
             reason = "does not accept families"
         elif "families_only" in r.tags and c.family_size <= 1:
             reason = "families with children only"
-        elif e.gender and c.gender and e.gender != c.gender:
+        elif e.gender and c.gender in ("male", "female") and e.gender != c.gender:
             reason = f"{e.gender}-only"
 
         if reason:
@@ -70,7 +70,7 @@ def apply_filters(resources: list[Resource], uc: UserConstraints) -> FilterResul
             w.append("Age requirement — confirm eligibility before traveling")
         if e.requires_id and c.has_id is None:
             w.append("Photo ID required — confirm you have one")
-        if e.gender and not c.gender:
+        if e.gender and c.gender not in ("male", "female"):
             w.append(f"{e.gender.capitalize()}-only — confirm eligibility")
             pen += 0.15
         if r.capacity is not None and r.capacity <= 3:

@@ -85,12 +85,8 @@ export const MODE_STYLE: Record<
   car: { color: "#1f2937", weight: 5 },
   rideshare: { color: "#6d4cc4", weight: 5 },
 };
-export function demoNowIso(): string {
-  return "2026-09-20T18:00:00";
-}
-
 export function timelineDayLabel(date: string, now: string): string {
-  if (date === now.slice(0, 10)) return "Tonight";
+  if (date === now.slice(0, 10)) return "Today";
 
   const tomorrow = new Date(`${now.slice(0, 10)}T12:00:00Z`);
   tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);

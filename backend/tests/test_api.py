@@ -32,7 +32,7 @@ def test_plan_and_replan_flow():
     r = client.patch("/resources/shelter_harbor_light/status", json={"status": "full"})
     assert r.status_code == 200 and r.json()["status"] == "full"
 
-    r = client.post("/replan", json={"plan_id": plan["plan_id"]})
+    r = client.post("/replan", json={"plan_id": plan["plan_id"], "now": NOW})
     assert r.status_code == 200, r.text
     body = r.json()
     assert body["previous_plan_id"] == plan["plan_id"]
@@ -59,7 +59,7 @@ def test_replan_keeps_selected_strategy(strategy):
     old = make_plan(extract(TEXT), datetime.fromisoformat(NOW), strategy=strategy)
     store.save_plan(old)
 
-    response = client.post("/replan", json={"plan_id": old.plan_id})
+    response = client.post("/replan", json={"plan_id": old.plan_id, "now": NOW})
 
     assert response.status_code == 200
     body = response.json()

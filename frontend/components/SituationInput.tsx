@@ -1,6 +1,7 @@
 "use client";
 import type { Constraints, Deadline, Need, UserConstraints } from "@/lib/types";
 import ConstraintFields from "./ConstraintFields";
+import SpeechInput from "./SpeechInput";
 import Icon from "./Icon";
 import { Spinner } from "./ui";
 export type Phase =
@@ -31,6 +32,10 @@ export default function SituationInput({
   onNeeds,
   onDeadline,
   deadlineValue,
+  voiceAvailable,
+  voiceBusy,
+  onVoiceBusy,
+  onTranscript,
 }: {
   text: string;
   onTextChange: (text: string, example?: boolean) => void;
@@ -42,16 +47,20 @@ export default function SituationInput({
   onNeeds: (needs: Need[]) => void;
   onDeadline: (deadline: Deadline) => void;
   deadlineValue?: Deadline;
+  voiceAvailable: boolean;
+  voiceBusy: boolean;
+  onVoiceBusy: (busy: boolean) => void;
+  onTranscript: (text: string) => void;
 }) {
-  const busy = ["extracting", "planning", "replanning"].includes(phase);
+  const busy =
+    voiceBusy || ["extracting", "planning", "replanning"].includes(phase);
   return (
     <section className="panel situation-panel">
       <div className="section-kicker">
         <span className="step-number">01</span> YOUR SITUATION
       </div>
-      <h2>
-        What do you need <br />
-        help with today?
+      <h2 id="situation-heading" tabIndex={-1}>
+        What do you need help with today?
       </h2>
       <p className="muted">Start wherever you are. A few words are enough.</p>
       <form
@@ -64,6 +73,12 @@ export default function SituationInput({
           onSubmit();
         }}
       >
+        <SpeechInput
+          disabled={["extracting", "planning", "replanning"].includes(phase)}
+          available={voiceAvailable}
+          onBusyChange={onVoiceBusy}
+          onTranscript={onTranscript}
+        />
         <label htmlFor="situation" className="sr-only">
           Describe your situation
         </label>
@@ -91,7 +106,9 @@ export default function SituationInput({
           disabled={busy || !text.trim()}
           type="submit"
         >
-          {busy ? (
+          {voiceBusy ? (
+            "Finish voice input to continue"
+          ) : busy ? (
             <>
               <Spinner />
               {phase === "extracting"
@@ -100,7 +117,7 @@ export default function SituationInput({
             </>
           ) : (
             <>
-              Build My Plan
+              Review my details
               <Icon name="arrow" />
             </>
           )}

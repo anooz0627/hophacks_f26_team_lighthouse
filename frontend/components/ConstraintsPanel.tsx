@@ -1,14 +1,16 @@
-import { ACCESSIBILITY, TRANSPORT } from "@/lib/constraints";
+import { ACCESSIBILITY, GENDERS, TRANSPORT } from "@/lib/constraints";
 import { DEADLINE_LABEL, SERVICE_LABEL } from "@/lib/format";
 import type { UserConstraints } from "@/lib/types";
 import Icon from "./Icon";
 export default function ConstraintsPanel({
   constraints,
   onEdit,
+  onEditLocation,
   reviewing = false,
 }: {
   constraints: UserConstraints;
   onEdit: () => void;
+  onEditLocation: () => void;
   reviewing?: boolean;
 }) {
   const c = constraints.constraints;
@@ -24,13 +26,24 @@ export default function ConstraintsPanel({
           : "Unavailable",
     ],
     ["Getting there", TRANSPORT[c.transport]],
-    ["Starting from", c.location_label],
+    [
+      "Starting from",
+      c.current_location ? c.location_label : "Location access needed",
+    ],
+    [
+      "Gender",
+      c.gender === "self_describe"
+        ? c.gender_description || "Self-described"
+        : c.gender
+          ? GENDERS[c.gender]
+          : "Not specified",
+    ],
     [
       "Household",
       `${c.family_size} ${c.family_size === 1 ? "person" : "people"}${c.children ? " · children" : ""}${c.pets ? " · pets" : ""}`,
     ],
     [
-      "Accessibility",
+      "Support for your trip",
       c.accessibility.map((a) => ACCESSIBILITY[a]).join(", ") ||
         "None specified",
     ],
@@ -82,7 +95,10 @@ export default function ConstraintsPanel({
           <div key={label}>
             <dt>{label}</dt>
             <dd>
-              <button onClick={onEdit} aria-label={`Edit ${label}: ${value}`}>
+              <button
+                onClick={label === "Starting from" ? onEditLocation : onEdit}
+                aria-label={`Edit ${label}: ${value}`}
+              >
                 {value}
                 <Icon name="edit" size={13} />
               </button>

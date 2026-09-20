@@ -268,8 +268,10 @@ h1 {
   font-size: 0.94rem;
 }
 .journey {
-  display: flex;
-  margin: 0 0 23px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  max-width: 980px;
+  margin: 0 auto 23px;
   padding: 0;
   list-style: none;
   gap: 20px;
@@ -279,7 +281,7 @@ h1 {
   align-items: center;
   gap: 10px;
   color: #716b78;
-  font-size: 0.8125rem;
+  font-size: 1rem;
   font-weight: 550;
   flex: 1;
 }
@@ -1685,7 +1687,7 @@ input[type="radio"] {
     margin-bottom: 24px;
   }
   .journey li {
-    font-size: 0.6875rem;
+    font-size: 0.875rem;
     gap: 6px;
     flex: 1;
   }
@@ -2340,4 +2342,262 @@ input[type="radio"] {
 .listen-row .button[aria-pressed="true"] {
   background: var(--purple-light);
   border-color: #c9bcde;
+}
+
+.planner-layout.planner-flow {
+  display: block;
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+}
+.situation-flow {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  overflow: hidden;
+}
+.situation-flow .plan-column {
+  gap: 0;
+}
+.situation-flow .situation-panel {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 36px;
+}
+.situation-flow .assistant {
+  margin: 0 36px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+}
+.assistant-companion p {
+  max-width: none;
+}
+.situation-flow .empty-plan {
+  border: 0;
+  box-shadow: none;
+  border-radius: 0;
+}
+.location-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.875rem;
+  margin: -6px 0 22px;
+  color: var(--muted);
+}
+.location-status svg {
+  flex-shrink: 0;
+}
+.location-status p {
+  margin: 0;
+}
+.location-status .text-button {
+  flex-shrink: 0;
+}
+.location-error {
+  color: #784514;
+}
+.header-inner .location-button {
+  display: inline-flex;
+  background: transparent;
+  border: 0;
+  min-height: 44px;
+  text-align: left;
+  cursor: pointer;
+}
+.journey li > button {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  min-height: 44px;
+  text-align: left;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  font: inherit;
+  padding: 0;
+  cursor: pointer;
+}
+.journey li > button:disabled {
+  cursor: default;
+}
+.journey li > button > span {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #eeecef;
+  color: #7b7686;
+  display: grid;
+  place-items: center;
+  font-size: 0.8125rem;
+}
+.journey .current > button > span {
+  background: var(--purple);
+  color: white;
+}
+.journey .passed > button > span {
+  background: #e7eee9;
+  color: var(--green);
+}
+.back-button {
+  align-self: flex-start;
+}
+.location-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.current-address {
+  display: grid;
+  gap: 5px;
+  overflow-wrap: anywhere;
+}
+.location-editor form {
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
+  display: grid;
+  gap: 14px;
+}
+.address-results ul,
+.unrouted-resources > ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 16px;
+}
+.address-results li {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px;
+}
+.address-results p {
+  margin-bottom: 12px;
+}
+.unrouted-resources {
+  display: grid;
+  gap: 18px;
+}
+.route-notice h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.route-notice p,
+.contact-option p {
+  margin-top: 10px;
+}
+.contact-option {
+  overflow-wrap: anywhere;
+}
+.contact-option h3 {
+  font-size: 1.25rem;
+}
+.contact-option .text-button {
+  margin-top: 14px;
+}
+.contact-warnings {
+  padding-left: 20px;
+  margin: 12px 0;
+  color: #784514;
+  font-size: 0.875rem;
+}
+.speech-input {
+  margin-bottom: 14px;
+}
+.speech-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.speech-actions button {
+  min-height: 44px;
+}
+.speech-input .field-hint {
+  margin: 8px 0 0;
+}
+.support-fields {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px;
+  margin: 6px 0;
+}
+.support-fields legend {
+  font-weight: 650;
+  padding: 0 6px;
+}
+.support-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 0;
+  cursor: pointer;
+}
+.support-option + .support-option {
+  border-top: 1px solid var(--line);
+}
+.support-option input {
+  margin-top: 4px;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.support-option strong {
+  display: block;
+  font-size: 0.9375rem;
+  font-weight: 550;
+}
+.support-option small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+@media (max-width: 640px) {
+  .situation-flow .situation-panel {
+    padding: 22px;
+  }
+  .situation-flow .assistant {
+    margin: 0 22px;
+    padding-right: 0;
+  }
+  .header-inner {
+    flex-wrap: wrap;
+    gap: 8px 16px;
+  }
+  .header-inner .location-button {
+    order: 3;
+    width: 100%;
+  }
+  .header-actions {
+    margin-left: auto;
+  }
+  .journey li > button {
+    gap: 6px;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.4;
+  }
+  .journey li {
+    align-items: flex-start;
+  }
+  .journey li > button > span {
+    width: 28px;
+    height: 28px;
+    font-size: 0.75rem;
+  }
+  .location-status {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .location-status p {
+    flex: 1;
+    min-width: 180px;
+  }
 }

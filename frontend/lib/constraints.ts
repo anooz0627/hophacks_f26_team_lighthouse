@@ -1,18 +1,4 @@
 import type { Constraints, Need, UserConstraints } from "./types";
-export const NEIGHBORHOODS: Record<
-  string,
-  {
-    lat: number;
-    lng: number;
-  }
-> = {
-  "Lexington Market": { lat: 39.291, lng: -76.6215 },
-  "Mount Vernon": { lat: 39.2975, lng: -76.615 },
-  "Charles Village": { lat: 39.32, lng: -76.616 },
-  "Patterson Park": { lat: 39.2935, lng: -76.581 },
-  "Federal Hill": { lat: 39.279, lng: -76.611 },
-  Brooklyn: { lat: 39.24, lng: -76.605 },
-};
 export const TRANSPORT: Record<Constraints["transport"], string> = {
   no_vehicle: "No vehicle · bus or walk",
   public_transit: "Public transit + walking",
@@ -21,9 +7,22 @@ export const TRANSPORT: Record<Constraints["transport"], string> = {
   own_vehicle: "Own vehicle",
 };
 export const ACCESSIBILITY = {
-  step_free: "Step-free access",
-  limited_walking: "Limited walking",
-  hearing_support: "Hearing support",
+  step_free: "I need step-free access",
+  limited_walking: "I need shorter walks",
+  hearing_support: "I need hearing support",
+} as const;
+export const SUPPORT_DETAILS = {
+  step_free: "Only include places with confirmed step-free access.",
+  limited_walking:
+    "Limit walking-only trips to 400 m and walks to bus stops to 8 minutes total.",
+  hearing_support: "Only include places with confirmed hearing support.",
+} as const;
+export const GENDERS = {
+  female: "Woman",
+  male: "Man",
+  non_binary: "Non-binary",
+  self_describe: "Self-describe",
+  prefer_not_to_say: "Prefer not to say",
 } as const;
 export const DEFAULT_CONSTRAINTS: Constraints = {
   age: null,
@@ -33,12 +32,13 @@ export const DEFAULT_CONSTRAINTS: Constraints = {
   family_size: 1,
   gender: null,
   children: false,
+  other_household_members: false,
   pets: false,
   accessibility: [],
   transport: "no_vehicle",
   transportation_needed: false,
-  location_label: "Lexington Market",
-  current_location: NEIGHBORHOODS["Lexington Market"],
+  location_label: "Current location",
+  current_location: null,
   start_time: null,
   custom_deadline: null,
 };

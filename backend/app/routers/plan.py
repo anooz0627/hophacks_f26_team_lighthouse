@@ -61,7 +61,7 @@ def replan(body: ReplanRequest) -> ReplanResponse:
     old = store.get_plan(body.plan_id)
     if not old:
         raise HTTPException(404, "plan not found")
-    now = body.now or datetime.fromisoformat(old.now)
+    now = body.now
     uc = old.constraints.model_copy(deep=True)
     new = make_plan(uc, now=now, origin=uc.constraints.current_location, strategy=old.strategy)
     new.explanation = explain.summarize(new)

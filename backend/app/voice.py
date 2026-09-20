@@ -6,6 +6,7 @@ from collections import OrderedDict
 import httpx
 
 from .models import Plan
+from .store import store
 
 DEFAULT_VOICE = "EXAVITQu4vr4xnSDxMaL"
 MODEL = "eleven_multilingual_v2"
@@ -34,8 +35,11 @@ def spoken_time(hhmm: str) -> str:
 
 def speech_script(plan: Plan) -> str:
     lines = ["Here is your plan." if plan.feasible else "Here is a partial plan."]
+    contacts_only = bool(plan.unrouted_resources) and not plan.resource_ids
+    if contacts_only:
+        lines = ["Here are places you can contact. A route is not confirmed."]
     day = None
-    for step in plan.steps:
+    for step in ([] if contacts_only else plan.steps):
         if step.type == "note" and "Could not schedule" not in step.title:
             lines.append(step.detail or step.title)
             continue
@@ -48,6 +52,12 @@ def speech_script(plan: Plan) -> str:
         if step.type == "travel" and step.duration_min:
             sentence += f" About {step.duration_min} minutes."
         lines.append(sentence)
+    if plan.unrouted_resources:
+        lines.append("Check travel time, fare, opening hours and availability before leaving.")
+        for option in plan.unrouted_resources:
+            resource = store.get(option.resource_id)
+            if resource:
+                lines.append(f"{resource.name}, at {resource.address}. {' '.join(option.warnings)}")
     if plan.unmet_needs:
         names = ", ".join(n.value.replace("_", " ") for n in plan.unmet_needs)
         lines.append(f"We could not schedule {names}. Call 2 1 1 for more options.")
@@ -81,3 +91,18 @@ def audio_for(plan_id: str, text: str) -> bytes:
     if len(_cache) > 32:
         _cache.popitem(last=False)
     return data
+
+
+async def transcribe(data: bytes, content_type: str, extension: str) -> str:
+    async with httpx.AsyncClient(timeout=35.0) as client:
+        response = await client.post(
+            "https://api.elevenlabs.io/v1/speech-to-text",
+            headers={"xi-api-key": os.environ["ELEVENLABS_API_KEY"]},
+            data={"model_id": "scribe_v2", "tag_audio_events": "false", "diarize": "false"},
+            files={"file": (f"recording.{extension}", data, content_type)},
+        )
+    response.raise_for_status()
+    text = response.json().get("text", "")
+    if not isinstance(text, str):
+        raise ValueError("Invalid transcript")
+    return text.strip()

@@ -1,5 +1,5 @@
 "use client";
-import { useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import GuideVisual from "./GuideVisual";
 export type AssistantState =
   | "idle"
@@ -49,43 +49,21 @@ export default function Assistant({
   visual?: ReactNode;
   reviewing?: boolean;
 }) {
-  const [hideCharacter, setHideCharacter] = useState(false);
-  const [still, setStill] = useState(false);
   return (
     <aside
       className={`assistant assistant-companion assistant-${state}`}
       aria-label="Planning assistant"
     >
-      {!hideCharacter && (
-        <div className="assistant-visual" aria-hidden="true">
-          {visual ?? (
-            <GuideVisual state={state} still={still} reviewing={reviewing} />
-          )}
-        </div>
-      )}
+      <div className="assistant-visual" aria-hidden="true">
+        {visual ?? (
+          <GuideVisual state={state} still={false} reviewing={reviewing} />
+        )}
+      </div>
       <div className="assistant-copy">
         <div aria-live="polite" aria-atomic="true">
           <span className="eyebrow">YOUR GUIDE</span>
           <h3>{labels[state]}</h3>
           <p>{message || messages[state]}</p>
-        </div>
-        <div className="assistant-options">
-          <button
-            type="button"
-            onClick={() => setHideCharacter(!hideCharacter)}
-            aria-pressed={hideCharacter}
-          >
-            {hideCharacter ? "Show character" : "Hide character"}
-          </button>
-          {!hideCharacter && !visual && (
-            <button
-              type="button"
-              onClick={() => setStill(!still)}
-              aria-pressed={still}
-            >
-              {still ? "Allow motion" : "Pause motion"}
-            </button>
-          )}
         </div>
       </div>
     </aside>
