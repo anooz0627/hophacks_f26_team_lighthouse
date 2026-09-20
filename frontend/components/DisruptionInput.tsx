@@ -3,7 +3,11 @@ import { useEffect, useRef, useState } from "react";
 import Icon from "./Icon";
 import { Spinner } from "./ui";
 
-export type ChangeMessage = { role: "user" | "assistant"; text: string; error?: boolean };
+export type ChangeMessage = {
+  role: "user" | "assistant";
+  text: string;
+  error?: boolean;
+};
 
 const QUICK = [
   "I missed the bus",
@@ -50,7 +54,10 @@ export default function DisruptionInput({
     onSubmit(trimmed);
     setText("");
   };
-  const chips = [...suggestions, ...QUICK.filter((q) => !suggestions.includes(q))];
+  const chips = [
+    ...suggestions,
+    ...QUICK.filter((q) => !suggestions.includes(q)),
+  ];
   return (
     <section
       className="disruption-dock"
@@ -62,86 +69,129 @@ export default function DisruptionInput({
         }
       }}
     >
-      {open && <div className="disruption-dock-inner" id="disruption-panel">
-        <button type="button" className="icon-button disruption-close" aria-label="Close changes panel" onClick={close}>
-          <Icon name="close" size={18} />
-        </button>
-        <div className="disruption-head">
-          <span className="eyebrow">
-            <Icon name="warning" size={14} /> SOMETHING CHANGED?
-          </span>
-          <span className="muted small">
-            Tell us what happened. The plan is checked again from where you are.
-          </span>
-        </div>
-        <div className="disruption-log" ref={logRef} role="log" aria-label="Plan change history" aria-live="polite" aria-relevant="additions text">
-          {messages.length === 0 && <p className="muted small disruption-log-empty">Changes you report and plan updates will appear here.</p>}
-          {messages.map((message, index) => (
-            <div key={index} className={`disruption-message disruption-message-${message.role}${message.error ? " disruption-message-error" : ""}`}>
-              <span className="disruption-message-author">{message.role === "user" ? "You" : "Lighthouse"}</span>
-              <p>{message.text}</p>
-            </div>
-          ))}
-          {busy && <p className="muted small">Checking your plan…</p>}
-        </div>
-        <div className="chips disruption-chips" aria-label="Common changes">
-          {chips.map((q, i) => (
-            <button
-              key={q}
-              type="button"
-              className={`chip ${i < suggestions.length ? "selected" : ""}`}
-              disabled={busy}
-              onClick={() => send(q)}
-            >
-              {q}
-            </button>
-          ))}
-        </div>
-        <form
-          className="disruption-row"
-          onSubmit={(e) => {
-            e.preventDefault();
-            send(text);
-          }}
-        >
-          <label htmlFor="disruption" className="sr-only">
-            What changed
-          </label>
-          <input
-            ref={inputRef}
-            id="disruption"
-            value={text}
-            disabled={busy}
-            maxLength={500}
-            placeholder="e.g. I missed the bus and the shelter is full"
-            onChange={(e) => setText(e.target.value)}
-          />
+      {open && (
+        <div className="disruption-dock-inner" id="disruption-panel">
           <button
-            type="submit"
-            className="button button-primary"
-            disabled={busy || !text.trim()}
+            type="button"
+            className="icon-button disruption-close"
+            aria-label="Close changes panel"
+            onClick={close}
           >
-            {busy ? <Spinner /> : <Icon name="route" size={16} />}
-            Update plan
+            <Icon name="close" size={18} />
           </button>
-        </form>
-      </div>}
+          <div className="disruption-head">
+            <span className="eyebrow">
+              <Icon name="warning" size={14} /> SOMETHING CHANGED?
+            </span>
+            <span className="muted small">
+              Tell us what happened. The plan is checked again from where you
+              are.
+            </span>
+          </div>
+          <div
+            className="disruption-log"
+            ref={logRef}
+            role="log"
+            aria-label="Plan change history"
+            aria-live="polite"
+            aria-relevant="additions text"
+          >
+            {messages.length === 0 && (
+              <p className="muted small disruption-log-empty">
+                Changes you report and plan updates will appear here.
+              </p>
+            )}
+            {messages.map((message, index) => (
+              <div
+                key={index}
+                className={`disruption-message disruption-message-${message.role}${message.error ? " disruption-message-error" : ""}`}
+              >
+                <span className="disruption-message-author">
+                  {message.role === "user" ? "You" : "Lighthouse"}
+                </span>
+                <p>{message.text}</p>
+              </div>
+            ))}
+            {busy && <p className="muted small">Checking your plan…</p>}
+          </div>
+          <div className="chips disruption-chips" aria-label="Common changes">
+            {chips.map((q, i) => (
+              <button
+                key={q}
+                type="button"
+                className={`chip ${i < suggestions.length ? "selected" : ""}`}
+                disabled={busy}
+                onClick={() => send(q)}
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+          <form
+            className="disruption-row"
+            onSubmit={(e) => {
+              e.preventDefault();
+              send(text);
+            }}
+          >
+            <label htmlFor="disruption" className="sr-only">
+              What changed
+            </label>
+            <input
+              ref={inputRef}
+              id="disruption"
+              value={text}
+              disabled={busy}
+              maxLength={500}
+              placeholder="e.g. I missed the bus and the shelter is full"
+              onChange={(e) => setText(e.target.value)}
+            />
+            <button
+              type="submit"
+              className="button button-primary"
+              disabled={busy || !text.trim()}
+            >
+              {busy ? <Spinner /> : <Icon name="route" size={16} />}
+              Update plan
+            </button>
+          </form>
+        </div>
+      )}
       <div className="disruption-launcher">
-        {!open && !bubbleDismissed && <span className="disruption-bubble">
-          Something changed?
-          <button type="button" className="disruption-bubble-close" aria-label="Dismiss Something changed hint" onClick={() => {
-            setBubbleDismissed(true);
-            toggleRef.current?.focus({ preventScroll: true });
-          }}><Icon name="close" size={11} /></button>
-        </span>}
+        {!open && !bubbleDismissed && (
+          <span className="disruption-bubble">
+            <button
+              type="button"
+              className="disruption-bubble-open"
+              onClick={() => onOpenChange(true)}
+            >
+              Something changed?
+            </button>
+            <button
+              type="button"
+              className="disruption-bubble-close"
+              aria-label="Dismiss Something changed hint"
+              onClick={() => {
+                setBubbleDismissed(true);
+                toggleRef.current?.focus({ preventScroll: true });
+              }}
+            >
+              <Icon name="close" size={11} />
+            </button>
+          </span>
+        )}
         <button
           ref={toggleRef}
           type="button"
           className="brand-mark disruption-toggle"
-          aria-label={open ? "Close changes panel" : "Something changed? Open changes panel"}
+          aria-label={
+            open
+              ? "Close changes panel"
+              : "Something changed? Open changes panel"
+          }
           aria-expanded={open}
           aria-controls={open ? "disruption-panel" : undefined}
-          onClick={() => open ? close() : onOpenChange(true)}
+          onClick={() => (open ? close() : onOpenChange(true))}
         >
           <Icon name="lighthouse" size={24} />
         </button>

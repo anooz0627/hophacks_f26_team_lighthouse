@@ -131,7 +131,7 @@ export default function Timeline({
                         )}
                         {isVisit && r && (
                           <span className={`status-badge ${r.status}`}>
-                            {STATUS_LABEL[r.status]} · demo
+                            {STATUS_LABEL[r.status]}
                           </span>
                         )}
                       </div>

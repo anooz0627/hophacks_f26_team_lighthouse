@@ -158,7 +158,13 @@ svg {
   top: calc(50% - 11px);
   width: 32px;
   height: 14px;
-  background: linear-gradient(90deg, transparent, #ffe393 45%, #ffe393 55%, transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    #ffe393 45%,
+    #ffe393 55%,
+    transparent
+  );
   clip-path: polygon(0 0, 50% 40%, 100% 0, 100% 100%, 50% 60%, 0 100%);
   opacity: 0.75;
   pointer-events: none;
@@ -2815,7 +2821,11 @@ input[type="radio"] {
   display: grid;
   place-items: center;
   color: #d4cddc;
-  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
 .milestone-label {
   font-size: 0.7rem;
@@ -3015,6 +3025,15 @@ input[type="radio"] {
   margin-top: 4px;
 }
 
+.disruption-bubble-open {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+}
 .disruption-bubble-close {
   position: absolute;
   right: 2px;
