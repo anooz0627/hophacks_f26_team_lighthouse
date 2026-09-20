@@ -2,12 +2,12 @@
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import AdminDrawer from "@/components/AdminDrawer";
-import Assistant, { type AssistantState } from "@/components/Assistant";
+import { type AssistantState } from "@/components/Assistant";
 import ConstraintFields from "@/components/ConstraintFields";
 import ConstraintsPanel from "@/components/ConstraintsPanel";
 import Header from "@/components/Header";
 import ListenButton from "@/components/ListenButton";
-import DisruptionInput from "@/components/DisruptionInput";
+import DisruptionInput, { type ChangeMessage } from "@/components/DisruptionInput";
 import NowCard from "@/components/NowCard";
 import BlockedNeeds from "@/components/BlockedNeeds";
 import HelpCard from "@/components/HelpCard";
@@ -72,10 +72,7 @@ export default function Home() {
   const [health, setHealth] = useState<Health | null>(null);
   const [transit, setTransit] = useState<TransitRoute[]>([]);
   const [helpOpen, setHelpOpen] = useState(false);
-  const [disruption, setDisruption] = useState<{
-    message: string;
-    actions: string[];
-  } | null>(null);
+  const [changeHistory, setChangeHistory] = useState<ChangeMessage[]>([]);
   const [resourceError, setResourceError] = useState<string | null>(null);
   const [detailId, setDetailId] = useState<string | null>(null);
   const [edit, setEdit] = useState<UserConstraints | null>(null);
@@ -83,8 +80,8 @@ export default function Home() {
   const [locationOpen, setLocationOpen] = useState(false);
   const [adminBusyId, setAdminBusyId] = useState<string | null>(null);
   const [completed, setCompleted] = useState<Set<string>>(new Set());
-  const [assistant, setAssistant] = useState<AssistantState>("idle");
-  const [guideMessage, setGuideMessage] = useState<string | undefined>();
+  const [, setAssistant] = useState<AssistantState>("idle");
+  const [, setGuideMessage] = useState<string | undefined>();
   const [invalidated, setInvalidated] = useState(false);
   const [stage, setStage] = useState(0);
   const [voiceBusy, setVoiceBusy] = useState(false);
@@ -229,11 +226,8 @@ export default function Home() {
   const nextStep = actionable.find((s) => !completed.has(stepKey(s))) ?? null;
   const nextResource = resources.find((r) => r.id === nextStep?.resource_id);
   const doneCount = actionable.filter((s) => completed.has(stepKey(s))).length;
-  const focusDisruption = () => {
-    const el = document.getElementById("disruption");
-    el?.scrollIntoView({ block: "center", behavior: "smooth" });
-    el?.focus({ preventScroll: true });
-  };
+  const [disruptionOpen, setDisruptionOpen] = useState(false);
+  const focusDisruption = () => setDisruptionOpen(true);
   const longWalk =
     plan?.steps.find((s) => s.warnings.some((w) => w.startsWith("Long walk"))) ??
     null;
@@ -252,6 +246,7 @@ export default function Home() {
     setPhase("replanning");
     setAssistant("replanning");
     setGuideMessage(undefined);
+    setChangeHistory((history) => [...history, { role: "user", text: message }]);
     try {
       const [next, list, routes] = await Promise.all([
         reportDisruption(current.plan_id, message, progressFor(current)),
@@ -261,10 +256,11 @@ export default function Home() {
       setResources(list);
       setTransit(routes);
       acceptBundle(next, current);
-      setDisruption({ message: next.message, actions: next.actions });
+      setChangeHistory((history) => [...history, { role: "assistant", text: next.message }]);
       setGuideMessage(next.message);
     } catch (err) {
       setError(errorMessage(err));
+      setChangeHistory((history) => [...history, { role: "assistant", text: `Could not update the plan: ${errorMessage(err)}`, error: true }]);
       setPhase("planned");
       setAssistant("warning");
     } finally {
@@ -627,22 +623,6 @@ export default function Home() {
                 }}
               />
             )}
-            <Assistant
-              state={assistant}
-              message={
-                guideMessage ??
-                (stage === 2 && plan?.unrouted_resources?.length
-                  ? "There are places you can contact. Check travel, opening hours and availability before going."
-                  : stage === 2 && plan && !busy && !invalidated
-                    ? nextStep
-                      ? `Right now, just this: ${nextStep.title}. Mark it done when it’s finished, or tell me below if something changed.`
-                      : actionable.length
-                        ? "Every step is done. Keep the help card handy if you need to explain your situation again."
-                        : undefined
-                    : undefined)
-              }
-              reviewing={phase === "review" && !error}
-            />
             {resourceError && !adminOpen && (
               <div className="alert error" role="alert">
                 {resourceError}
@@ -778,6 +758,14 @@ export default function Home() {
                     </button>
                   </p>
                 )}
+                    <DisruptionInput
+                      open={disruptionOpen}
+                      onOpenChange={setDisruptionOpen}
+                      onSubmit={(t) => void handleDisruption(t)}
+                      busy={busy}
+                      messages={changeHistory}
+                      suggestions={longWalk ? ["That's too far to walk"] : []}
+                    />
                 {invalidated || busy ? (
                   <div className="panel invalid-plan" role="status">
                     <Spinner />
@@ -920,12 +908,7 @@ export default function Home() {
                       </>
                     )}
                     <RejectedPanel rejected={plan.rejected} />
-                    <DisruptionInput
-                      onSubmit={(t) => void handleDisruption(t)}
-                      busy={busy}
-                      lastMessage={disruption?.message}
-                      suggestions={longWalk ? ["That's too far to walk"] : []}
-                    />
+
                   </>
                 )}
               </>
